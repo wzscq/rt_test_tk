@@ -1,0 +1,86 @@
+.property-grid {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.property-grid-title {
+  width: 100%;
+  height: 20px;
+  font-size: 12px;
+  background-color: #ccc;
+  border-bottom: 0.5px solid #aaa;
+  padding-left: 5px;
+}
+
+.property-grid-content .title {
+  background-color: #ccc;
+  text-align: center;
+}
+
+.property-grid .col-title {
+  background-color: #ccc;
+  text-align: center;
+  height: 20px;
+  font-size: 12px;
+  border-bottom: 0.5px solid #ccc;
+}
+
+.property-grid .col-title div {
+  height: 100%;
+}
+
+.property-grid .col-title .name {
+  float: left;
+  border-right: 0.5px solid #aaa;
+}
+
+.property-grid .col-title .value {
+  float: left;
+}
+
+.property-grid-content {
+  width: 100%;
+  height: calc(100% - 40px);
+  font-size: 12px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.property-grid-content .row {
+  width: 100%;
+  height: 20px;
+  border-bottom: 0.5px solid #aaa;
+  overflow: hidden;
+}
+
+.property-grid-content .col {
+  height: 100%;
+  float: left;
+}
+
+.property-grid-content .name {
+  text-align: right;
+  border-right: 0.5px solid #aaa;
+  padding-right: 5px;
+}
+
+.property-grid-content .value {
+  text-align: left;
+  padding-left: 5px;
+}
+
+.property-grid-split {
+  position: absolute;
+  width: 5px;
+  height: calc(100% - 25px);
+  top: 25px;
+  left: 150px;
+  background: transparent;
+  border-left: 0px dotted gray;
+  cursor: col-resize;
+}
+
+.property-grid-split:hover{
+  border-left: 1px dotted gray;
+}

@@ -5,8 +5,8 @@
     },
     "crv":{
         "server":"http://127.0.0.1:8200",
-        "appID":"rt_test",
-        "token":"rt_test_service"
+        "appID":"rt_test_tk",
+        "token":"rt_test_tk_service"
     },
     "robotMQTTClient":{
         "broker":"tcp://47.101.221.57:1883",
@@ -33,12 +33,13 @@
         }
     },
     "mqtt":{
-        "broker":"121.37.185.248",
+        "broker":"182.42.81.6",
         "port":1983,
         "wsPort":9101,
         "user":"mosquitto",
         "password":"123456",
-        "uploadMeasurementMetrics":"realtime_measurement_reporting/"
+        "uploadMeasurementMetrics":"realtime_measurement_reporting/",
+        "sendTestCaseTopic":"run_test_case/"
     },
     "ftp":{
         "host":"",

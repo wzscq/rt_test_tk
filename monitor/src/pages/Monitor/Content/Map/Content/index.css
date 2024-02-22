@@ -1,0 +1,15 @@
+.monitor-map-content {
+    width: 100%;
+    height: calc(100% - 20px);
+    overflow: auto;
+    position: relative;
+}
+
+.map-point {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    color: blue;
+    background-color: blue;
+    position: absolute;
+}

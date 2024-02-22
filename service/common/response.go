@@ -28,6 +28,7 @@ const (
 	ResultNoTaskUeTc = 10200011
 	ResultConvertPGM2PNGError = 10200012
 	ResultFileNotExist = 10200013
+	ResultSendTestCaseError = 10200014
 )
 
 var errMsg = map[int]CommonRsp{
@@ -39,6 +40,11 @@ var errMsg = map[int]CommonRsp{
 	ResultWrongRequest:CommonRsp{
 		ErrorCode:ResultWrongRequest,
 		Message:"请求参数错误，请检查参数是否完整，参数格式是否正确",
+		Error:true,
+	},
+	ResultSendTestCaseError:CommonRsp{
+		ErrorCode:ResultSendTestCaseError,
+		Message:"下发测试用例失败，请与管理员联系处理",
 		Error:true,
 	},
 	ResultGetRobotPlatformTokenError:CommonRsp{

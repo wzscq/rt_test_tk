@@ -64,6 +64,14 @@ type FtpConf struct {
 	Folder string `json:"folder"`
 }
 
+type MapConf struct {
+	Center []float64 `json:"center"`
+  Zoom int `json:"zoom"`
+  MaxZoom int `json:"maxZoom"` 
+  MinZoom int  `json:"minZoom"` 
+  URL string `json:"url"`
+}
+
 type Config struct {
 	Service serviceConf `json:"service"`
 	RobotMQTTClient RobotMQTTClientConf `json:"robotMQTTClient"`
@@ -72,6 +80,7 @@ type Config struct {
 	Mqtt MqttConf `json:"mqtt"`
 	Ftp FtpConf `json:"ftp"`
 	TestFile TestfileConf `json:"testFile"`
+	Map MapConf `json:"map"`
 }
 
 var gConfig Config

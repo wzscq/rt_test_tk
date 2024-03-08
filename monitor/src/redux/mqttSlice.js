@@ -10,7 +10,8 @@ const initialState = {
         user:"mosquitto",
         password:"123456",
         uploadMeasurementMetrics:"realtime_measurement_reporting/"
-    }
+    },
+    mapConf:null
 }
 
 export const mqttSlice = createSlice({
@@ -19,7 +20,11 @@ export const mqttSlice = createSlice({
     reducers: {
         setServerConf:(state,action)=>{
             state.mqttConf=action.payload.mqtt;
+            state.mapConf=action.payload.map;
             state.mqttConfLoaded=true;
+        },
+        setMqttStatus:(state,action)=>{
+            state.mqttStatus=action.payload;
         }
     },
     extraReducers: (builder) => {

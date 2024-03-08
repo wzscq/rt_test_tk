@@ -96,7 +96,7 @@ const opUpdateServerConf={
 }
 
 const REDIRECT_URL='/redirect';
-const RT_SERVICE_GET_SERVERCONF='rtservice/device/getServerConf';
+const RT_SERVICE_GET_SERVERCONF='rttkservice/device/getServerConf';
 
 const opGetServerConf={
     type:OP_TYPE.REQUEST,

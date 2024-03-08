@@ -14,12 +14,14 @@ type DeviceController struct {
 	MqttConf *common.MqttConf
 	FtpConf *common.FtpConf
 	MQTTClient *mqtt.MQTTClient
+	MapConf *common.MapConf
 }
 
 func (dc *DeviceController)getServerConf(c *gin.Context){
 	res:=map[string]interface{}{
 		"mqtt":dc.MqttConf,
 		"ftp":dc.FtpConf,
+		"map":dc.MapConf,
 	}
 	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
 	c.IndentedJSON(http.StatusOK, rsp)

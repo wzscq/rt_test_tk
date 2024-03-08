@@ -10,12 +10,11 @@ var g_MQTTClient=null;
 
 export default function Header(){
   const dispatch=useDispatch();
-  const {mqttConf}=useSelector(state=>state.mqtt);
-  const device=useSelector(state=>state.data.device.list?state.data.device.list[0]:undefined);
-  const [mqttStatus,setMqttStatus]=useState('disconnected');
+  const {mqttConf,mqttStatus}=useSelector(state=>state.mqtt);
+  //const [mqttStatus,setMqttStatus]=useState('disconnected');
 
   useEffect(()=>{
-    const connectMqtt=(deviceID)=>{
+    const connectMqtt=()=>{
       console.log("connectMqtt ... ");
       if(g_MQTTClient!==null){
           g_MQTTClient.end();
@@ -33,7 +32,7 @@ export default function Header(){
       g_MQTTClient  = mqtt.connect(server,options);
       g_MQTTClient.on('connect', () => {
           setMqttStatus("connected to mqtt server "+server+".");
-          const topic=mqttConf.uploadMeasurementMetrics+deviceID;
+          const topic=mqttConf.uploadMeasurementMetrics;
           g_MQTTClient.subscribe(topic, (err) => {
               if(!err){
                   setMqttStatus("subscribe topics success.");
@@ -52,14 +51,11 @@ export default function Header(){
       });
     }
 
-    if(device?.host_id){
-      connectMqtt(device.host_id);
-    }
-  },[device,dispatch,mqttConf]);
+    //connectMqtt();
+  },[dispatch,mqttConf]);
 
   return (
     <div className='monitor-header'>
-      {'Device: '+device?.id+" Host: "+device?.host_id}
       {' MQTT: '+mqttStatus}
     </div>
   )

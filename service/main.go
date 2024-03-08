@@ -64,6 +64,7 @@ func main() {
 		CRVClient:crvClient,
 		MqttConf:&conf.Mqtt,
 		FtpConf:&conf.Ftp,
+		MapConf:&conf.Map,
 		MQTTClient:&mqttClient,
 	}
 	dc.Bind(router)
@@ -72,6 +73,8 @@ func main() {
 		OutPath:conf.TestFile.Path,
 	}
 	tc.Bind(router)
+
+	router.Static("/maptiles", "./maptiles")
 	
 	router.Run(conf.Service.Port)
 }

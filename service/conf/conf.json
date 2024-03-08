@@ -51,5 +51,13 @@
     "testFile":{
         "path":"./localcache",
         "idleBeforeClose":"10s"
+    },
+    "map":{
+        "center":[121.5,30.9],
+        "zoom":10,
+        "maxZoom":15,
+        "minZoom":5,
+        "url1":"http://localhost:8300/maptiles/{z}/{x}/{y}.png",
+        "url":"http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn$size=1&scl=1&style=7"
     }
 }

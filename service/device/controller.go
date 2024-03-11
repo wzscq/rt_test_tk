@@ -15,6 +15,7 @@ type DeviceController struct {
 	FtpConf *common.FtpConf
 	MQTTClient *mqtt.MQTTClient
 	MapConf *common.MapConf
+	DeviceClient *DeviceClient
 }
 
 func (dc *DeviceController)getServerConf(c *gin.Context){
@@ -121,9 +122,66 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 	c.IndentedJSON(http.StatusOK, rsp)
 }
 
+func (dc *DeviceController)getImsi(c *gin.Context){
+	log.Println("DeviceController getImsi")
+	res,err:=dc.DeviceClient.GetImsi()
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController getImsi with error")
+		return
+	}
+
+	log.Println(res)
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController getImsi success")
+}
+
+func (dc *DeviceController)dialQuery(c *gin.Context){
+	res,err:=dc.DeviceClient.GetDialQuery()
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController dialQuery with error")
+		return
+	}
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController dialQuery success")
+}
+
+func (dc *DeviceController)dialTrigger(c *gin.Context){
+	res,err:=dc.DeviceClient.DialTrigger()
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController dialTrigger with error")
+		return
+	}
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController dialQuery success")
+}
+
 func (dc *DeviceController) Bind(router *gin.Engine) {
 	log.Println("Bind DeviceController")
 	router.POST("/device/getServerConf", dc.getServerConf)
 	router.POST("/device/getTestCase", dc.getTestCase)
 	router.POST("/device/runTestCase", dc.runTestCase)
+	router.POST("/device/getImsi", dc.getImsi)
+	router.POST("/device/dialQuery", dc.dialQuery)
+	router.POST("/device/dialTrigger", dc.dialTrigger)
 }

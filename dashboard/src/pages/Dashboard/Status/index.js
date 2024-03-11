@@ -1,11 +1,16 @@
 import {useSelector} from 'react-redux';
 
-export default function Status() {
-  const data=useSelector(state=>state.data);
+import Imsi from './Imsi';
+import Dial from './Dial';
+
+export default function Status({sendMessageToParent,frame}) {
+
 
   return (
-    <div>
-      {JSON.stringify(data)}
+    <div style={{padding:'10px'}}>
+      <Imsi sendMessageToParent={sendMessageToParent} frame={frame}/>
+      <div style={{height:10}}></div>
+      <Dial sendMessageToParent={sendMessageToParent} frame={frame}/>
     </div>
   );
 }

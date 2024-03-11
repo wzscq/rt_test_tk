@@ -43,6 +43,8 @@ export const DATA_TYPE={
     MODEL_CONF:'modelConf',//"DATA_TYPE_MODEL_CONF",   //模型配置数据
     QUERY_RESULT:'queryResult',//"DATA_TYPE_QUERY_RESULT",   //数据查询结果
     SERVER_CONF:'serverConf',//"DATA_TYPE_SERVER_CONF",   //服务器配置
+    IMSI:'imsi',//"DATA_TYPE_IMSI",   //IMSI数据
+    DIAL:'dial',//"DATA_TYPE_DIAL",   //拨号数据
 }
 
 export const FORM_TYPE={

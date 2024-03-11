@@ -9,7 +9,8 @@ const initialState = {
         wsPort:9101,
         user:"mosquitto",
         password:"123456",
-        uploadMeasurementMetrics:"realtime_measurement_reporting/"
+        uploadMeasurementMetrics:"realtime_measurement_reporting",
+        uploadDeviceStatus:"UploadDeviceStatus"
     }
 }
 

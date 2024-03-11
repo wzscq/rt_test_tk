@@ -121,3 +121,29 @@ export function createGetServerConfMessage(frameParams){
         }
     };   
 }
+
+const opSuccessRedirct={
+    type:OP_TYPE.UPDATE_FRAME_DATA,
+}
+
+const opRedirct={
+    type:OP_TYPE.REQUEST,
+    params:{
+        url:REDIRECT_URL,
+        method:"post"
+    },
+    description:{key:'page.rtservice.dashboard.redirect',default:'调用API'},
+    queenable:true
+}
+
+export function createRedirectMessage(frameParams,to,dataType){
+    opSuccessRedirct.params={...frameParams,dataType:dataType};
+    opRedirct.input={to:to};
+    opRedirct.successOperation=opSuccessRedirct;
+    return {
+        type:FRAME_MESSAGE_TYPE.DO_OPERATION,
+        data:{
+            operationItem:opRedirct
+        }
+    };   
+}

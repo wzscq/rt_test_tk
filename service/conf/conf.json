@@ -32,13 +32,17 @@
             "url":"http://47.101.221.57:8840/hazhi-boot/robot/robotInfo/receiveTasks"
         }
     },
+    "deviceClient":{
+        "serverUrl":"http://182.42.81.6:5000/"
+    },
     "mqtt":{
         "broker":"182.42.81.6",
         "port":1983,
         "wsPort":9101,
         "user":"mosquitto",
         "password":"123456",
-        "uploadMeasurementMetrics":"realtime_measurement_reporting/",
+        "uploadMeasurementMetrics":"realtime_measurement_reporting",
+        "uploadDeviceStatus":"realtime_device_status",
         "sendTestCaseTopic":"run_test_case/"
     },
     "ftp":{

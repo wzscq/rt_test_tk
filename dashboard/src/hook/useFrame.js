@@ -2,9 +2,10 @@ import { useEffect,useCallback } from 'react';
 import {useSelector,useDispatch} from 'react-redux';
 
 import {setParam} from '../redux/frameSlice';
-//import {setDevice} from '../redux/dataSlice';
+import {setImsi,setDial} from '../redux/dataSlice';
 import {setLocale} from '../redux/i18nSlice';
 import {setServerConf} from '../redux/mqttSlice';
+
 
 import {
     FRAME_MESSAGE_TYPE,
@@ -46,6 +47,10 @@ export default function useFrame(){
                 //dispatch(setDevice(data));
             } else if (dataType===DATA_TYPE.SERVER_CONF){
                 dispatch(setServerConf(data));
+            } else if (dataType===DATA_TYPE.IMSI){
+                dispatch(setImsi(data));
+            } else if (dataType===DATA_TYPE.DIAL){
+                dispatch(setDial(data));
             } else {
                 console.log("update data with wrong data type:",dataType);
             }

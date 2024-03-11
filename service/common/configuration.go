@@ -41,6 +41,10 @@ type crvConf struct {
 	Token string `json:"token"`
 }
 
+type DeviceClientConf struct {
+	ServerUrl string `json:"serverUrl"`
+}
+
 type MqttConf struct {
 	Broker string `json:"broker"`
 	Port int `json:"port"`
@@ -48,6 +52,7 @@ type MqttConf struct {
 	Password string `json:"password"`
 	User string `json:"user"`
 	UploadMeasurementMetrics string `json:"uploadMeasurementMetrics"`
+	UploadDeviceStatus string `json:"uploadDeviceStatus"`
 	SendTestCaseTopic string `json:"sendTestCaseTopic"`
 }
 
@@ -81,6 +86,7 @@ type Config struct {
 	Ftp FtpConf `json:"ftp"`
 	TestFile TestfileConf `json:"testFile"`
 	Map MapConf `json:"map"`
+	DeviceClient DeviceClientConf `json:"deviceClient"`
 }
 
 var gConfig Config

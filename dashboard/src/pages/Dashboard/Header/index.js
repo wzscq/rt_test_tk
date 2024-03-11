@@ -10,11 +10,11 @@ import './index.css';
 var g_MQTTClient=null;
 
 export default function Header({sendMessageToParent,frame}){
-  const dispatch=useDispatch();
-  const {mqttConf,mqttConfLoaded}=useSelector(state=>state.mqtt);
-  const [mqttStatus,setMqttStatus]=useState('disconnected');
+  //const dispatch=useDispatch();
+  //const {mqttConf,mqttConfLoaded}=useSelector(state=>state.mqtt);
+  //const [mqttStatus,setMqttStatus]=useState('disconnected');
 
-  useEffect(()=>{
+  /*useEffect(()=>{
     const connectMqtt=(deviceID)=>{
       console.log("connectMqtt ... ");
       if(g_MQTTClient!==null){
@@ -33,7 +33,7 @@ export default function Header({sendMessageToParent,frame}){
       g_MQTTClient  = mqtt.connect(server,options);
       g_MQTTClient.on('connect', () => {
           setMqttStatus("connected to mqtt server "+server+".");
-          const topic=mqttConf.uploadMeasurementMetrics+deviceID;
+          const topic=mqttConf.uploadDeviceStatus;
           g_MQTTClient.subscribe(topic, (err) => {
               if(!err){
                   setMqttStatus("subscribe topics success.");
@@ -65,11 +65,11 @@ export default function Header({sendMessageToParent,frame}){
       sendMessageToParent(createGetServerConfMessage(frameParams));
     }
     
-  },[dispatch,mqttConf,mqttConfLoaded,frame,sendMessageToParent]);
+  },[dispatch,mqttConf,mqttConfLoaded,frame,sendMessageToParent]);*/
 
   return (
     <div className='monitor-header'>
-      {' MQTT: '+mqttStatus}
+      {/*' MQTT: '+mqttStatus*/}
     </div>
   )
 }

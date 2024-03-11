@@ -29,6 +29,7 @@ const (
 	ResultConvertPGM2PNGError = 10200012
 	ResultFileNotExist = 10200013
 	ResultSendTestCaseError = 10200014
+	ResultInvokeDeviceAPIError = 10200015
 )
 
 var errMsg = map[int]CommonRsp{
@@ -105,6 +106,11 @@ var errMsg = map[int]CommonRsp{
 	ResultFileNotExist:CommonRsp{
 		ErrorCode:ResultFileNotExist,
 		Message:"请求的测试文件不存在",
+		Error:true,
+	},
+	ResultInvokeDeviceAPIError:CommonRsp{
+		ErrorCode:ResultInvokeDeviceAPIError,
+		Message:"调用设备API接口发生错误",
 		Error:true,
 	},
 }

@@ -13,7 +13,7 @@ export default function Dashboard() {
     return (
       <div>
         <Header sendMessageToParent={sendMessageToParent} frame={frame}/>
-        <Status/>
+        <Status sendMessageToParent={sendMessageToParent} frame={frame}/>
       </div>
     );
   }

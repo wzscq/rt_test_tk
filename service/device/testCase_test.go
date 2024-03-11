@@ -9,7 +9,42 @@ import (
 	"time"
 )
 
-func _TestGetTestCase(t *testing.T) {
+/*
+{
+	"details": {
+		"exampleCode": "ftp_executor",
+		"params": {
+			"tc_params": {
+				"method": "download",
+				"user": "test",
+				"passwd": "Happy@robot#1234",
+				"remote_file": "/tmp/7gb",
+				"server_url": "192.168.100.109",
+				"mode": "bytime",
+				"intervals": 10,
+				"repeat": 1,
+				"duration": 5,
+				"no_data": 60,5
+				"no_data_ping": 10,
+				"thread": 3,
+				"timeout": 20
+			},
+			"operator_info": {
+				"band": "78",
+				"ue_identify_type": "imsi",
+				"ue_identify": "460011895631209",
+				"freq": "1234",
+				"netType": "LTE"
+			},
+			"tc_id": "tc001"
+		}
+	},
+	"trigger": "start",
+	"topic": "CommandResult"
+}
+*/
+
+func TestGetTestCase(t *testing.T) {
 	crvClient := &crv.CRVClient{
 		Server: "http://localhost:8200",
 		Token:  "rt_test_tk_service",
@@ -26,7 +61,7 @@ func _TestGetTestCase(t *testing.T) {
 	}
 }
 
-func _TestSendTestCase(t *testing.T) {
+func TestSendTestCase(t *testing.T) {
 	conf := common.InitConfig("../conf/conf.json")
 
 	crvClient := &crv.CRVClient{
@@ -35,12 +70,14 @@ func _TestSendTestCase(t *testing.T) {
 		AppID:  conf.CRV.AppID,
 	}
 
-	tc := GetTestCase("FTPUpload", conf.CRV.Token, crvClient)
+	tc := GetTestCase("001", conf.CRV.Token, crvClient)
 
 	if tc == nil {
 		t.Error("GetTestCase error")
 		return
 	}
+
+	cmd:=GetTestCommand(tc)
 
 	//初始化MQTT客户端
 	mqttClient := mqtt.MQTTClient{
@@ -54,7 +91,7 @@ func _TestSendTestCase(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	err := SendTestCase(tc, &mqttClient, conf.Mqtt.SendTestCaseTopic)
+	err := SendTestCase(cmd, &mqttClient, conf.Mqtt.SendTestCaseTopic)
 	if err != nil {
 		t.Error("SendTestCase error")
 	}

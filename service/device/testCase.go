@@ -9,6 +9,23 @@ import (
 	"rt_test_service/mqtt"
 )
 
+type TestCommandParams struct {
+	Params map[string]interface{} `json:"tc_params"`
+	OperatorInfo map[string]interface{} `json:"operator_info"`
+	TCID string `json:"tc_id"`
+}
+
+type TestCommandDetail struct {
+	ExampleCode string `json:"exampleCode"`
+	Params TestCommandParams `json:"params"`
+}
+
+type TestCommand struct {
+	Details TestCommandDetail `json:"details"`
+	Trigger string `json:"trigger"`
+	Topic string `json:"topic"`
+}
+
 type TestCase struct {
 	ID       string                 `json:"id"`
 	Name     string                 `json:"name"`
@@ -76,22 +93,51 @@ func GetTestCase(id string, token string, crvClient *crv.CRVClient) *TestCase {
 	tc.Name, _ = tcMap["name"].(string)
 	tc.Function, _ = tcMap["rt_main_function_id"].(string)
 	tc.Method, _ = tcMap["rt_function_method_id"].(string)
-
-	params, _ := tcMap["params"].([]interface{})
+	tc.Params = make(map[string]interface{})
+	paramMap, _ := tcMap["params"].(map[string]interface{})
+	params, _ := paramMap["list"].([]interface{})
 	for _, param := range params {
 		paramMap := param.(map[string]interface{})
 		paramName, _ := paramMap["param_name"].(string)
 		paramValue, _ := paramMap["param_value"].(string)
+		log.Println("paramName:", paramName, "paramValue:", paramValue)
 		tc.Params[paramName] = paramValue
 	}
 
 	return &tc
 }
 
-func SendTestCase(tc *TestCase, mqttClient *mqtt.MQTTClient, topic string) error {
+func GetTestCommand(testCase *TestCase) *TestCommand {
+	testCommandParams:=TestCommandParams{
+		Params:testCase.Params,
+		OperatorInfo:map[string]interface{}{
+			"band": "78",
+			"ue_identify_type": "imsi",
+			"ue_identify": "460011895631209",
+			"freq": "1234",
+			"netType": "LTE",
+		},
+		TCID:testCase.ID,
+	}
+
+	testCommandDetail:=TestCommandDetail{
+		ExampleCode:testCase.Name,
+		Params:testCommandParams,
+	}
+
+	testCommand:=TestCommand{
+		Trigger:"start",
+		Topic:"CommandResult",
+		Details:testCommandDetail,
+	}
+
+	return &testCommand
+}
+
+func SendTestCase(cmd *TestCommand, mqttClient *mqtt.MQTTClient, topic string) error {
 	log.Println("SendTestCase")
 	//convert tc to json
-	tcJson, err := json.Marshal(tc)
+	tcJson, err := json.Marshal(cmd)
 	if err != nil {
 		log.Println("SendTestCase error: convert tc to json failed")
 		log.Println(err)

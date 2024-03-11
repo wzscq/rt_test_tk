@@ -10,10 +10,14 @@ import {Point} from 'ol/geom.js';
 import Feature from 'ol/Feature.js';
 import {Circle, Fill, Stroke, Style} from 'ol/style.js';
 import { transform } from "ol/proj";
+import mqtt from 'mqtt';
+
+import {setMqttStatus} from '../../../../redux/mqttSlice';
+import {addDataItem} from '../../../../redux/dataSlice';
 
 import './index.css';
 
-const g_MQTTClient=null;
+var g_MQTTClient=null;
 
 export default function MapWrapper(){
   const dispatch=useDispatch();
@@ -41,14 +45,14 @@ export default function MapWrapper(){
       console.log("connect to mqtt server ... "+server+" with options:",options);
       g_MQTTClient  = mqtt.connect(server,options);
       g_MQTTClient.on('connect', () => {
-          setMqttStatus("connected to mqtt server "+server+".");
+          dispatch(setMqttStatus("connected to mqtt server "+server+"."));
           const topic=mqttConf.uploadMeasurementMetrics;
           g_MQTTClient.subscribe(topic, (err) => {
               if(!err){
-                  setMqttStatus("subscribe topics success.");
-                  console.log("topic:",topic);
+                dispatch(setMqttStatus("subscribe topics success."));
+                console.log("topic:",topic);
               } else {
-                  setMqttStatus("subscribe topics error :"+err.toString());
+                dispatch(setMqttStatus("subscribe topics error :"+err.toString()));
               }
           });
       });
@@ -57,7 +61,7 @@ export default function MapWrapper(){
           dispatch(addDataItem(JSON.parse(payload.toString())));
       });
       g_MQTTClient.on('close', () => {
-        setMqttStatus("mqtt client is closed.");
+        dispatch(setMqttStatus("mqtt client is closed."));
       });
     }
 

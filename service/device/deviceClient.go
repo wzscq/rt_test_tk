@@ -11,6 +11,7 @@ const (
 	URL_GET_IMSI     = "api/ue/get_imsi"
 	URL_DIAL_QUERY   = "api/ue/dial_query"
 	URL_DIAL_TRIGGER = "api/ue/dial_trigger"
+	URL_DEVICE_REBOOT = "api/ue/reset"
 )
 
 type DeviceClient struct {
@@ -61,4 +62,8 @@ func (dc *DeviceClient) GetDialQuery() (map[string]interface{}, error) {
 
 func (dc *DeviceClient) DialTrigger() (map[string]interface{}, error) {
 	return dc.Get(URL_DIAL_TRIGGER)
+}
+
+func (dc *DeviceClient) DeviceReboot() (map[string]interface{}, error) {
+	return dc.Get(URL_DEVICE_REBOOT)
 }

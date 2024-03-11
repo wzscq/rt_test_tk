@@ -11,7 +11,8 @@ const initialState = {
         password:"123456",
         uploadMeasurementMetrics:"realtime_measurement_reporting/"
     },
-    mapConf:null
+    mapConf:null,
+    mqttStatus:'disconnected'
 }
 
 export const mqttSlice = createSlice({
@@ -50,7 +51,8 @@ export const mqttSlice = createSlice({
 });
 
 export const { 
-    setServerConf    
+    setServerConf,
+    setMqttStatus
 } = mqttSlice.actions
 
 

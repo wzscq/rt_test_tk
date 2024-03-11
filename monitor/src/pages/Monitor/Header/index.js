@@ -1,19 +1,19 @@
-import {useSelector,useDispatch} from 'react-redux';
-import mqtt from 'mqtt';
-import { useEffect, useState } from 'react';
+import {useSelector} from 'react-redux';
+//import mqtt from 'mqtt';
+//import { useEffect, useState } from 'react';
 
-import {addDataItem} from '../../../redux/dataSlice';
+//import {addDataItem} from '../../../redux/dataSlice';
 
 import './index.css';
 
-var g_MQTTClient=null;
+//var g_MQTTClient=null;
 
 export default function Header(){
-  const dispatch=useDispatch();
-  const {mqttConf,mqttStatus}=useSelector(state=>state.mqtt);
+  //const dispatch=useDispatch();
+  const {mqttStatus}=useSelector(state=>state.mqtt);
   //const [mqttStatus,setMqttStatus]=useState('disconnected');
 
-  useEffect(()=>{
+  /*useEffect(()=>{
     const connectMqtt=()=>{
       console.log("connectMqtt ... ");
       if(g_MQTTClient!==null){
@@ -52,7 +52,7 @@ export default function Header(){
     }
 
     //connectMqtt();
-  },[dispatch,mqttConf]);
+  },[dispatch,mqttConf]);*/
 
   return (
     <div className='monitor-header'>

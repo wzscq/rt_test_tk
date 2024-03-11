@@ -108,9 +108,12 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 		log.Println("DeviceController runTestCase with error: query test case failed")
 		return
 	}
+
+	//转换为下发指令
+	cmd:=GetTestCommand(tc)
 	
 	//生成下发数据结构
-	err:=SendTestCase(tc,dc.MQTTClient,dc.MqttConf.SendTestCaseTopic)
+	err:=SendTestCase(cmd,dc.MQTTClient,dc.MqttConf.SendTestCaseTopic)
 	if err != nil {
 		rsp:=common.CreateResponse(common.CreateError(common.ResultSendTestCaseError,nil),nil)
 		c.IndentedJSON(http.StatusOK, rsp)
@@ -173,7 +176,43 @@ func (dc *DeviceController)dialTrigger(c *gin.Context){
 
 	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
 	c.IndentedJSON(http.StatusOK, rsp)
-	log.Println("DeviceController dialQuery success")
+	log.Println("DeviceController dialTrigger success")
+}
+
+func (dc *DeviceController)deviceReboot(c *gin.Context){
+	res,err:=dc.DeviceClient.DeviceReboot()
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController deviceReboot with error")
+		return
+	}
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController deviceReboot success")
+}
+
+func (dc *DeviceController)stopTestCase(c *gin.Context){
+	cmd:=&TestCommand{
+		Trigger:"start",
+		Topic:"CommandResult",
+	}
+
+	//生成下发数据结构
+	err:=SendTestCase(cmd,dc.MQTTClient,dc.MqttConf.SendTestCaseTopic)
+	if err != nil {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultSendTestCaseError,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController stopTestCase with error: send test case failed")
+		return
+	}
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),nil)
+	c.IndentedJSON(http.StatusOK, rsp)
 }
 
 func (dc *DeviceController) Bind(router *gin.Engine) {
@@ -181,7 +220,9 @@ func (dc *DeviceController) Bind(router *gin.Engine) {
 	router.POST("/device/getServerConf", dc.getServerConf)
 	router.POST("/device/getTestCase", dc.getTestCase)
 	router.POST("/device/runTestCase", dc.runTestCase)
+	router.POST("/device/stopTestCase", dc.stopTestCase)
 	router.POST("/device/getImsi", dc.getImsi)
 	router.POST("/device/dialQuery", dc.dialQuery)
 	router.POST("/device/dialTrigger", dc.dialTrigger)
+	router.POST("/device/reboot", dc.deviceReboot)
 }

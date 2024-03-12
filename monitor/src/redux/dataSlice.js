@@ -1,290 +1,65 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const finalData = {
+  exampleCode: "ftp_executor", 
+  msg: null, 
+  msg_type: "finally", 
+  testData: {
+    id: "460011895631209", 
+    func_name: "ftp_executor", 
+    type: "command", 
+    result: {
+      res: true, 
+      data: {
+        res: false, 
+        msg: ["NotReachable"]
+      }, 
+      msg: null
+    }, 
+    code: 100, 
+    taskId: "tc001", 
+    imei: "867826050500420", 
+    imsi: "460001933146754", 
+    operator: "CHINA MOBILE"
+  }
+}
+
 const initialState = {
-    data:[
-      /*{
-        data: [
-          {
-            radio: {
-              measures_common: {
-                Current_Network_Type: "",
-                IMSI: "460011895631209",
-                IMEI: "864451045593183",
-                imsi: "460011895631209",
-                imei: "864451045593183",
-                duplex_mode: "",
-                net_Tye: "NR_SA",
-                plmn: "46001",
-                operator: "\u4e2d\u56fd\u8054\u901a",
-                operator_country: "cn",
-                operator_short: "CHN-UNICOM",
-                phone_name: "Redmi K30 5G Speed"
-              },
-              measures_nr: {
-                SS_SINR:"11.37",
-                SS_RSRP:"-84.59"
-              }
-            },
-            event: [
-              {
-                Logfile: "testRecoder_0818-212920",
-                pointIndex: 204,
-                EventIndex: 11,
-                EventTime: "2023-08-18 21:29:29.121",
-                EventCode: "0x8D",
-                name: "FTP Download TCPSlow"
-              }
-            ],
-            msg: [
-              {
-                Logfile: "testRecoder_0818-212920",
-                pointIndex: 430,
-                MsgTime: "2023-08-18 21:29:33.894",
-                MsgCode: "0x50000200",
-                name: "NR->MeasurementReport"
-              }
-            ],
-            time: 1692365376,
-            case_progress: {
-              session_id: 161920005569,
-              full_path: "d:\\test_recoder\\testReport_001_161920005569\\progress_460011895631209.csv",
-              imsi: "460011895631209",
-              DevId: "28e79a383c89153af87780ec745e2481",
-              Status: "FTPDownload",
-              Times: "1/1",
-              Progress: "8/30s",
-              FailTimes: 0,
-              OtherInfo: "Inst:2,729.30 kbps  Avg:2,799.36 kbps SuccRatio:100%(1/1)"
-            }
-          },
-          {
-            radio: {
-              measures_common: {
-                Current_Network_Type: "",
-                IMSI: "460011895631209",
-                IMEI: "864451045593183",
-                imsi: "460011895631208",
-                imei: "864451045593183",
-                duplex_mode: "",
-                net_Tye: "NR_SA",
-                plmn: "46001",
-                operator: "\u4e2d\u56fd\u8054\u901a",
-                operator_country: "cn",
-                operator_short: "CHN-UNICOM",
-                phone_name: "Redmi K30 5G Speed"
-              },
-              measures_nr: {
-                SS_SINR:"11.37",
-                SS_RSRP:"-84.59"
-              }
-            },
-            event: [
-              {
-                Logfile: "testRecoder_0818-212920",
-                pointIndex: 204,
-                EventIndex: 11,
-                EventTime: "2023-08-18 21:29:29.121",
-                EventCode: "0x8D",
-                name: "FTP Download TCPSlow"
-              }
-            ],
-            msg: [
-              {
-                Logfile: "testRecoder_0818-212920",
-                pointIndex: 430,
-                MsgTime: "2023-08-18 21:29:33.894",
-                MsgCode: "0x50000200",
-                name: "NR->MeasurementReport"
-              }
-            ],
-            time: 1692365376,
-            case_progress: {
-              session_id: 161920005569,
-              full_path: "d:\\test_recoder\\testReport_001_161920005569\\progress_460011895631209.csv",
-              imsi: "460011895631208",
-              DevId: "28e79a383c89153af87780ec745e2481",
-              Status: "FTPDownload",
-              Times: "1/1",
-              Progress: "8/30s",
-              FailTimes: 0,
-              OtherInfo: "Inst:2,729.30 kbps  Avg:2,799.36 kbps SuccRatio:100%(1/1)"
-            }
-          }
-        ],
-        robot_info: {
-          id: 1,
-          robot_id: "2bee174b7d7c36e9b98bd8772e66af5e",
-          map_id: "9ec5a9c61a374be4b0570077d7d6dd05",
-          pixel_x: 616.645741420779,
-          pixel_y: 285.72210123115497,
-          pixel_theta: -110.04722431915482,
-          record: "2023-08-18 21:27:05"
-        },
-        pcTime: 1692365376
-      } */     
-    ],
-    event:{
-      /*["460011895631208"]:[
-        {
-          Logfile: "testRecoder_0818-212920",
-          pointIndex: 204,
-          EventIndex: 11,
-          EventTime: "2023-08-18 21:29:29.121",
-          EventCode: "0x8D",
-          name: "FTP Download TCPSlow"
-        }
-      ],
-      ["460011895631209"]:[
-        {
-          Logfile: "testRecoder_0818-212920",
-          pointIndex: 204,
-          EventIndex: 11,
-          EventTime: "2023-08-18 21:29:29.121",
-          EventCode: "0x8D",
-          name: "FTP Download TCPSlow"
-        }
-      ]*/
-    },
-    message:{
-      /*["460011895631208"]:[
-        {
-          Logfile: "testRecoder_0818-212920",
-          pointIndex: 430,
-          MsgTime: "2023-08-18 21:29:33.894",
-          MsgCode: "0x50000200",
-          name: "NR->MeasurementReport"
-        }
-      ],
-      ["460011895631209"]:[
-        {
-          Logfile: "testRecoder_0818-212920",
-          pointIndex: 430,
-          MsgTime: "2023-08-18 21:29:33.894",
-          MsgCode: "0x50000200",
-          name: "NR->MeasurementReport"
-        }
-      ]*/
-    },
-    deviceLoaded:false,
-    device:null,
-    currentPoint:0,
-    currentRobotInfo: {
-      /*id: 1,
-      robot_id: "2bee174b7d7c36e9b98bd8772e66af5e",
-      map_id: "9ec5a9c61a374be4b0570077d7d6dd05",
-      pixel_x: 616.645741420779,
-      pixel_y: 285.72210123115497,
-      pixel_theta: -110.04722431915482,
-      record: "2023-08-18 21:27:05"*/
-    },
-    currentUes:{
-      /*["460011895631208"]:{
-        radio: {
-          measures_common: {
-            Current_Network_Type: "",
-            IMSI: "460011895631209",
-            IMEI: "864451045593183",
-            imsi: "460011895631209",
-            imei: "864451045593183",
-            duplex_mode: "",
-            net_Tye: "NR_SA",
-            plmn: "46001",
-            operator: "\u4e2d\u56fd\u8054\u901a",
-            operator_country: "cn",
-            operator_short: "CHN-UNICOM",
-            phone_name: "Redmi K30 5G Speed"
-          },
-          measures_nr: {
-            SS_SINR:"11.37",
-            SS_RSRP:"-84.59"
-          }
-        },
-        event: [
-          {
-            Logfile: "testRecoder_0818-212920",
-            pointIndex: 204,
-            EventIndex: 11,
-            EventTime: "2023-08-18 21:29:29.121",
-            EventCode: "0x8D",
-            name: "FTP Download TCPSlow"
-          }
-        ],
-        msg: [
-          {
-            Logfile: "testRecoder_0818-212920",
-            pointIndex: 430,
-            MsgTime: "2023-08-18 21:29:33.894",
-            MsgCode: "0x50000200",
-            name: "NR->MeasurementReport"
-          }
-        ],
-        time: 1692365376,
-        case_progress: {
-          session_id: 161920005569,
-          full_path: "d:\\test_recoder\\testReport_001_161920005569\\progress_460011895631209.csv",
-          imsi: "460011895631209",
-          DevId: "28e79a383c89153af87780ec745e2481",
-          Status: "FTPDownload",
-          Times: "1/1",
-          Progress: "8/30s",
-          FailTimes: 0,
-          OtherInfo: "Inst:2,729.30 kbps  Avg:2,799.36 kbps SuccRatio:100%(1/1)"
-        }
-      },
-      ["460011895631209"]:{
-        radio: {
-          measures_common: {
-            Current_Network_Type: "",
-            IMSI: "460011895631209",
-            IMEI: "864451045593183",
-            imsi: "460011895631208",
-            imei: "864451045593183",
-            duplex_mode: "",
-            net_Tye: "NR_SA",
-            plmn: "46001",
-            operator: "\u4e2d\u56fd\u8054\u901a",
-            operator_country: "cn",
-            operator_short: "CHN-UNICOM",
-            phone_name: "Redmi K30 5G Speed"
-          },
-          measures_nr: {
-            SS_SINR:"11.37",
-            SS_RSRP:"-84.59"
-          }
-        },
-        event: [
-          {
-            Logfile: "testRecoder_0818-212920",
-            pointIndex: 204,
-            EventIndex: 11,
-            EventTime: "2023-08-18 21:29:29.121",
-            EventCode: "0x8D",
-            name: "FTP Download TCPSlow"
-          }
-        ],
-        msg: [
-          {
-            Logfile: "testRecoder_0818-212920",
-            pointIndex: 430,
-            MsgTime: "2023-08-18 21:29:33.894",
-            MsgCode: "0x50000200",
-            name: "NR->MeasurementReport"
-          }
-        ],
-        time: 1692365376,
-        case_progress: {
-          session_id: 161920005569,
-          full_path: "d:\\test_recoder\\testReport_001_161920005569\\progress_460011895631209.csv",
-          imsi: "460011895631208",
-          DevId: "28e79a383c89153af87780ec745e2481",
-          Status: "FTPDownload",
-          Times: "1/1",
-          Progress: "8/30s",
-          FailTimes: 0,
-          OtherInfo: "Inst:2,729.30 kbps  Avg:2,799.36 kbps SuccRatio:100%(1/1)"
-        }
-      }*/
+  data:{
+    exampleCode:"ftp_executor",
+    msg: null,
+    msg_type:"report",
+    testData:{
+      msgTpye: "nr5g-saReport",
+      layer: "radio", 
+      event: "hangon",
+      throughput: {
+        downlink: "0.0 bytes/s", 
+        uplink: "0.0 bytes/s"
+      }, 
+      state: "idle", 
+      taskId: "tc001", 
+      imei: "867826050500420", 
+      imsi: "460001933146754", 
+      operator: "CHINA MOBILE",
+      measures: {
+        duplex_mode: "TDD",
+        MCC: "460",
+        MNC: "00", 
+        cellID: "87D008", 
+        PCID: "18", 
+        TAC: "100000", 
+        ARFCN: "504990", 
+        band: "41", 
+        NR_DL_bandwidth: "12", 
+        RSRP: "-62", 
+        RSRQ: "-11", 
+        SINR: "26", 
+        srxlev: "7488"
+      }
     }
+  },
+  commandResult:{}
 }
 
 export const dataSlice = createSlice({
@@ -292,60 +67,25 @@ export const dataSlice = createSlice({
     initialState,
     reducers: {
       addDataItem:(state,action)=>{
-        state.data=[...state.data,action.payload];
-        //更新robotinfo
-        state.currentRobotInfo={...action.payload.robot_info,pcTime:action.payload.pcTime};
-    
-        //收敛event和message，设置当前UE信息
-        action.payload.data.forEach(dataItem => {
-          if(dataItem.event?.length>0){
-            const imsi=dataItem.case_progress?.imsi;
-            let eventPool=state.event[imsi];
-            if(eventPool&&eventPool.length>0){
-              const lastEventItem=eventPool[eventPool.length-1];
-              dataItem.event.forEach(eventItem=>{
-                if(eventItem.EventTime>lastEventItem.EventTime){
-                  eventPool.push(eventItem);
-                }
-              });
-            } else {
-              eventPool=[...dataItem.event];
-            }
-            state.event={...state.event,[imsi]:[...eventPool]};
-          }
-
-          if(dataItem.msg?.length>0){
-            const imsi=dataItem.case_progress?.imsi;
-            let msgPool=state.message[imsi];
-            if(msgPool&&msgPool.length>0){
-              const lastMsgItem=msgPool[msgPool.length-1];
-              dataItem.msg.forEach(msgItem=>{
-                if(msgItem.MsgTime>lastMsgItem.MsgTime){
-                  msgPool.push(msgItem);
-                }
-              });
-            } else {
-              msgPool=[...dataItem.msg];
-            }
-            state.message={...state.message,[imsi]:[...msgPool]};
-          }
-
-          //设置当前UE信息
-          state.currentUes[dataItem.case_progress.imsi]={...dataItem};
-        });
-
+        if(action.payload.msg_type==='report'){
+          state.data=action.payload;
+        } else {
+          state.data.msg_type=action.payload.msg_type;
+          state.data.result_res=action.payload.testData?.result?.res;
+          state.data.result_msg=JSON.stringify(action.payload.testData?.result?.msg);
+          state.data.result_data_res=action.payload.testData?.result?.data?.res;
+          state.data.result_data_msg=JSON.stringify(action.payload.testData?.result?.data?.msg);
+        }
       },
-      setDevice:(state,action)=>{
-        console.log("setDevice:",action.payload);
-        state.device=action.payload;
-        state.deviceLoaded=true;
+      setCommandResult:(state,action)=>{
+        state.commandResult=action.payload;
       }
     }
 });
 
 export const { 
   addDataItem,
-  setDevice
+  setCommandResult
 } = dataSlice.actions
 
 export default dataSlice.reducer

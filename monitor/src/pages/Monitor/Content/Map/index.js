@@ -13,7 +13,7 @@ import { transform } from "ol/proj";
 import mqtt from 'mqtt';
 
 import {setMqttStatus} from '../../../../redux/mqttSlice';
-import {addDataItem} from '../../../../redux/dataSlice';
+import {addDataItem,setCommandResult} from '../../../../redux/dataSlice';
 
 import './index.css';
 
@@ -49,16 +49,28 @@ export default function MapWrapper(){
           const topic=mqttConf.uploadMeasurementMetrics;
           g_MQTTClient.subscribe(topic, (err) => {
               if(!err){
-                dispatch(setMqttStatus("subscribe topics success."));
-                console.log("topic:",topic);
+                dispatch(setMqttStatus("subscribe topics "+topic+" success."));
+                console.log("subscribe success. topic:",topic);
               } else {
                 dispatch(setMqttStatus("subscribe topics error :"+err.toString()));
               }
           });
+
+          g_MQTTClient.subscribe("CommandResult", (err) => {
+            if(!err){
+              console.log("subscribe success. topic:CommandResult");
+            } else {
+              console.log("subscribe topics error :"+err.toString());
+            }
+        });
       });
       g_MQTTClient.on('message', (topic, payload, packet) => {
           console.log("receiconsolleve message topic :"+topic+" content :"+payload.toString());
-          dispatch(addDataItem(JSON.parse(payload.toString())));
+          if(topic===mqttConf.uploadMeasurementMetrics){
+            dispatch(addDataItem(JSON.parse(payload.toString())));
+          } else {
+            dispatch(setCommandResult(JSON.parse(payload.toString())));
+          }
       });
       g_MQTTClient.on('close', () => {
         dispatch(setMqttStatus("mqtt client is closed."));

@@ -36,12 +36,15 @@ export default function PropertyGrid({obj,title}){
       }
   }
 
-  const rows=obj?Object.keys(obj).map(key=>{
-    return (<div className='row' key={key}>
+  const rows=[];
+
+  Object.keys(obj).forEach(key=>{
+    console.log('obj keys:',key);
+    rows.push((<div className='row' key={key}>
       <div className='col name' style={{width:(splitLeft-5)}}>{key}</div>
       <div className='col value' style={{width:'calc(100% - '+(splitLeft+6)+'px)'}}>{obj[key]}</div>
-    </div>);
-  }):undefined;
+    </div>));
+  });
 
   return (<div className="property-grid"
           onMouseMove={onSplitonMouseMove}

@@ -2,7 +2,6 @@ import { useEffect,useCallback } from 'react';
 import {useSelector,useDispatch} from 'react-redux';
 
 import {setParam} from '../redux/frameSlice';
-import {setDevice} from '../redux/dataSlice';
 import {setLocale} from '../redux/i18nSlice';
 import {setServerConf} from '../redux/mqttSlice';
 
@@ -42,8 +41,6 @@ export default function useFrame(){
         } else if (type===FRAME_MESSAGE_TYPE.UPDATE_DATA){
             if(dataType===DATA_TYPE.MODEL_CONF){
                 //dispatch(setDefinition(data));
-            } else if (dataType===DATA_TYPE.QUERY_RESULT){
-                dispatch(setDevice(data));
             } else if (dataType===DATA_TYPE.SERVER_CONF){
                 dispatch(setServerConf(data));
             } else {

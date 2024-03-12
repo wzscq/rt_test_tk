@@ -49,7 +49,7 @@ func (mqc *MQTTClient) connectHandler(client mqtt.Client){
 	log.Println("MQTTClient connectHandler connect status: ",client.IsConnected())
 	mqc.Client=client
 	if client.IsConnected() {
-		topic:=mqc.UploadMeasurementMetrics+"#"
+		topic:=mqc.UploadMeasurementMetrics
 		log.Println("MQTTClient Subscribe topic:"+topic)
 		client.Subscribe(topic,0,mqc.onUploadMeasurementMetrics)
 	}
@@ -72,7 +72,9 @@ func (mqc *MQTTClient)onUploadMeasurementMetrics(Client mqtt.Client, msg mqtt.Me
 	deviceID:=msg.Topic()[len(mqc.UploadMeasurementMetrics):]
 	log.Println("MQTTClient onUploadMeasurementMetrics deviceID ",deviceID)
 	//更新下发状态
-	mqc.Handler.DealDeviceTestMessage(deviceID,string(msg.Payload()))
+	if mqc.Handler != nil {
+		mqc.Handler.DealDeviceTestMessage(deviceID,string(msg.Payload()))
+	}
 }
 
 func (mqc *MQTTClient)Publish(topic,content string)(int){

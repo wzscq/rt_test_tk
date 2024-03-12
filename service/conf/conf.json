@@ -8,30 +8,6 @@
         "appID":"rt_test_tk",
         "token":"rt_test_tk_service"
     },
-    "robotMQTTClient":{
-        "broker":"tcp://47.101.221.57:1883",
-        "password":"123456",
-        "user":"mosquitto"
-    },
-    "robotClient":{
-        "oauth":{
-            "url":"http://47.101.221.57:8840/hazhi-boot/robot/robotInfo/oauth/token",
-            "appKey":"XJPH",
-            "appSecret":"78Fb79b86e69bcc1a22&6693bff2f8090"
-        },
-        "getRobotList":{
-            "url":"http://47.101.221.57:8840/hazhi-boot/robot/robotInfo/getRobotListInfo"
-        },
-        "getCurrentRobotStatus":{
-            "url":"http://47.101.221.57:8840/hazhi-boot/robot/robotStatus/getCurrentRobotStatus"
-        },
-        "getTestEquipmentStatus":{
-            "url":"http://47.101.221.57:8840/hazhi-boot/robot/robotInfo/getTestEquipmentStatus"
-        },
-        "sendTask":{
-            "url":"http://47.101.221.57:8840/hazhi-boot/robot/robotInfo/receiveTasks"
-        }
-    },
     "deviceClient":{
         "serverUrl":"http://182.42.81.6:5000/"
     },

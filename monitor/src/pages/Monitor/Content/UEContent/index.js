@@ -1,24 +1,30 @@
 import { useSelector } from "react-redux";
 import { SplitPane } from "react-collapse-pane";
 import PropertyGrid from '../PropertyGrid';
-import ListGrid from '../ListGrid';
 
-export default function UEContent({imsi}){
-    const dataItem=useSelector(state=>state.data.currentUes[imsi]);
-    const event=useSelector(state=>state.data.event[imsi]);
-    const message=useSelector(state=>state.data.message[imsi]);
+export default function UEContent(){
+    const {data,commandResult}=useSelector(state=>state.data);
 
-    console.log('UEContent',imsi,dataItem,event,message);
+    const useCase={...data};
+    delete useCase.testData;
 
+    const deviceInfo={...data.testData};
+    delete deviceInfo.measures;
+    delete deviceInfo.throughput;
+
+    const measures={...data?.testData?.measures};
+    const throughput={...data?.testData?.throughput};
+   
     return (
-        <SplitPane key={imsi} dir='ltr' initialSizes={[50,50]} split="vertical" collapse={false}>
-            <SplitPane split="horizontal" collapse={false}>
-                <PropertyGrid obj={dataItem?.radio?.measures_lte} title="lte measures"/>
-                <PropertyGrid obj={dataItem?.radio?.measures_nr} title="nr measures"/>
+        <SplitPane dir='ltr' initialSizes={[50,50]} split="vertical" collapse={false}>
+            <SplitPane split="horizontal" initialSizes={[20,30,50]} collapse={false}>
+                <PropertyGrid obj={commandResult} title="测试执行结果"/>
+                <PropertyGrid obj={useCase} title="测试用例"/>
+                <PropertyGrid obj={deviceInfo} title="设备信息"/>
             </SplitPane>
-            <SplitPane split="horizontal" collapse={false}>
-                <ListGrid list={event} title={'events'} name={'event'} nameField={'EventTime'} timeField={'name'} />
-                <ListGrid list={message} title={'messages'} name={'message'} nameField={'MsgTime'} timeField={'name'}/>
+            <SplitPane split="horizontal" initialSizes={[20,80]} collapse={false}>
+                <PropertyGrid obj={throughput} title="速率"/>
+                <PropertyGrid obj={measures} title="测量指标"/>
             </SplitPane>
         </SplitPane>
     );

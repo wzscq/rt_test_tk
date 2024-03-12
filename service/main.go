@@ -40,7 +40,7 @@ func main() {
 	}
 
 	//初始化测试文件处理对象
-	tfp := testfile.InitTestFilePool(conf.TestFile.Path, conf.TestFile.IdleBeforeClose, crvClient)
+	//tfp := testfile.InitTestFilePool(conf.TestFile.Path, conf.TestFile.IdleBeforeClose, crvClient)
 
 	//初始化MQTT客户端
 	mqttClient := mqtt.MQTTClient{
@@ -48,7 +48,7 @@ func main() {
 		User:                     conf.Mqtt.User,
 		Password:                 conf.Mqtt.Password,
 		UploadMeasurementMetrics: conf.Mqtt.UploadMeasurementMetrics,
-		Handler:                  tfp,
+		//Handler:                  tfp,
 		Port:                     conf.Mqtt.Port,
 	}
 	mqttClient.Init()

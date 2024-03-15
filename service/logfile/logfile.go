@@ -23,12 +23,15 @@ func GetLogFileList(path string) ([]LogFileItem,error){
 	var files []LogFileItem
 	// Read all the files from the directory
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-			if !info.IsDir() {
+			if info!=nil && !info.IsDir() {
+				
 					fileinfo := LogFileItem {
-						Name:         path,
+						Name:         filepath.Base(info.Name()),
 						Size:         info.Size(),
 						CreationTime: info.ModTime().Format("2006-01-02 15:04:05"),
 					}
+
+					log.Println(fileinfo)
 
 					files = append(files, fileinfo)
 			}
@@ -89,7 +92,9 @@ func SaveLogFileToDB(logFile map[string]interface{},crvClient *crv.CRVClient,tok
 func GetLogFileFromDB(file LogFileItem,crvClient *crv.CRVClient,token string)(map[string]interface{},error){
 	//从数据库中查询这个文件
 	filter := map[string]interface{}{
-		"id": file.Name,
+		"id":map[string]interface{}{
+			"Op.eq": file.Name,
+		},
 	}
 
 	commonRep := crv.CommonReq{

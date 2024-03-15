@@ -7,11 +7,13 @@ import (
 )
 
 func TestGetLogFileList(t *testing.T) {
-	files, err := GetLogFileList(".")
+	files, err := GetLogFileList("../mqtt/")
 	if err != nil {
 		t.Error("GetLogFileList error")
 		return
 	}
+
+	fmt.Println(files)
 
 	for _, file := range files {
 		fmt.Println(file.Name, file.Size, file.CreationTime)

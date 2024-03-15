@@ -4,7 +4,8 @@
         "cstZone":8
     },
     "crv":{
-        "server":"http://172.17.0.1:8902",
+        "server1":"http://172.17.0.1:8902",
+        "server":"http://localhost:8200",
         "appID":"rt_test_tk",
         "token":"rt_test_tk_service"
     },
@@ -31,6 +32,9 @@
     "testFile":{
         "path":"./localcache",
         "idleBeforeClose":"10s"
+    },
+    "testLogFile":{
+        "path":"./logfile/"
     },
     "map":{
         "center":[121.5,30.9],

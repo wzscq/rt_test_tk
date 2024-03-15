@@ -226,3 +226,18 @@ func (dc *DeviceController) Bind(router *gin.Engine) {
 	router.POST("/device/dialTrigger", dc.dialTrigger)
 	router.POST("/device/reboot", dc.deviceReboot)
 }
+
+func InitDeviceController(conf *common.Config,crvClient *crv.CRVClient,mqttClient *mqtt.MQTTClient,router *gin.Engine){
+	dc:=DeviceController{
+		CRVClient: crvClient,
+		MqttConf: &conf.Mqtt,
+		FtpConf: &conf.Ftp,
+		MQTTClient: mqttClient,
+		MapConf: &conf.Map,
+		DeviceClient: &DeviceClient{
+			ServerUrl: conf.DeviceClient.ServerUrl,
+		},
+	}
+
+	dc.Bind(router)
+}

@@ -30,6 +30,7 @@ const (
 	ResultFileNotExist = 10200013
 	ResultSendTestCaseError = 10200014
 	ResultInvokeDeviceAPIError = 10200015
+	ResultUpdateLogFileError = 10200016
 )
 
 var errMsg = map[int]CommonRsp{
@@ -111,6 +112,11 @@ var errMsg = map[int]CommonRsp{
 	ResultInvokeDeviceAPIError:CommonRsp{
 		ErrorCode:ResultInvokeDeviceAPIError,
 		Message:"调用设备API接口发生错误",
+		Error:true,
+	},
+	ResultUpdateLogFileError:CommonRsp{
+		ErrorCode:ResultUpdateLogFileError,
+		Message:"更新日志文件信息失败",
 		Error:true,
 	},
 }

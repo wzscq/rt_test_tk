@@ -10,6 +10,7 @@ import (
 	"rt_test_service/device"
 	"rt_test_service/mqtt"
 	"rt_test_service/testfile"
+	"rt_test_service/logfile"
 	"time"
 )
 
@@ -53,27 +54,9 @@ func main() {
 	}
 	mqttClient.Init()
 
-	/*rtc:=robot.RobotController{
-		RobotClient:robotClient,
-		CRVClient:crvClient,
-		FtpConf:&conf.Ftp,
-	}
-	rtc.Bind(router)*/
-
-	deviceClient := device.DeviceClient{
-		ServerUrl: conf.DeviceClient.ServerUrl,
-	}
-
-	dc := device.DeviceController{
-		CRVClient:  crvClient,
-		MqttConf:   &conf.Mqtt,
-		FtpConf:    &conf.Ftp,
-		MapConf:    &conf.Map,
-		MQTTClient: &mqttClient,
-		DeviceClient: &deviceClient,
-	}
-	dc.Bind(router)
-
+	device.InitDeviceController(conf,crvClient,&mqttClient,router)
+	logfile.InitLogFileController(conf,crvClient,router)
+	
 	tc := testfile.TestFileController{
 		OutPath: conf.TestFile.Path,
 	}

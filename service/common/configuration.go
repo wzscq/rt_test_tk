@@ -61,6 +61,10 @@ type TestfileConf struct {
 	IdleBeforeClose string `json:"idleBeforeClose"`
 }
 
+type TestLogFileConf struct {
+	Path string `json:"path"`
+}
+
 type FtpConf struct {
 	Host string `json:"host"`
 	Port int `json:"port"`
@@ -87,6 +91,7 @@ type Config struct {
 	TestFile TestfileConf `json:"testFile"`
 	Map MapConf `json:"map"`
 	DeviceClient DeviceClientConf `json:"deviceClient"`
+	TestLogFile TestLogFileConf `json:"testLogFile"`
 }
 
 var gConfig Config

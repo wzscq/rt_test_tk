@@ -91,7 +91,7 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 		log.Println("DeviceController runTestCase with error")
 		log.Println(err)
 		return
-  }
+  	}
 
 	if rep.SelectedRowKeys == nil || len(*rep.SelectedRowKeys) == 0 {
 		rsp:=common.CreateResponse(common.CreateError(common.ResultWrongRequest,nil),nil)

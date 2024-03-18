@@ -9,7 +9,7 @@ import (
 )
 
 type EventHandler interface {
-	DealDeviceTestMessage(deviceID,report string)
+	HandleDecodeResult(result string)
 }
 
 type MQTTClient struct {
@@ -20,6 +20,7 @@ type MQTTClient struct {
 	UploadMeasurementMetrics string
 	Handler EventHandler
 	Client mqtt.Client
+	DecodeResutlTopic string
 }
 
 func (mqc *MQTTClient) getClient()(mqtt.Client){
@@ -49,9 +50,9 @@ func (mqc *MQTTClient) connectHandler(client mqtt.Client){
 	log.Println("MQTTClient connectHandler connect status: ",client.IsConnected())
 	mqc.Client=client
 	if client.IsConnected() {
-		topic:=mqc.UploadMeasurementMetrics
+		topic:=mqc.DecodeResutlTopic
 		log.Println("MQTTClient Subscribe topic:"+topic)
-		client.Subscribe(topic,0,mqc.onUploadMeasurementMetrics)
+		client.Subscribe(topic,0,mqc.OnDecodeResutl)
 	}
 }
 
@@ -67,13 +68,10 @@ func (mqc *MQTTClient) reconnectingHandler(Client mqtt.Client,opts *mqtt.ClientO
 	log.Println("MQTTClient reconnectingHandler ")
 }
 
-func (mqc *MQTTClient)onUploadMeasurementMetrics(Client mqtt.Client, msg mqtt.Message){
-	log.Println("MQTTClient onUploadMeasurementMetrics ",msg.Topic())
-	deviceID:=msg.Topic()[len(mqc.UploadMeasurementMetrics):]
-	log.Println("MQTTClient onUploadMeasurementMetrics deviceID ",deviceID)
-	//更新下发状态
+func (mqc *MQTTClient) OnDecodeResutl(Client mqtt.Client, msg mqtt.Message){
+	log.Println("MQTTClient DecodeResutlTopic ",msg.Topic())
 	if mqc.Handler != nil {
-		mqc.Handler.DealDeviceTestMessage(deviceID,string(msg.Payload()))
+		mqc.Handler.HandleDecodeResult(string(msg.Payload()))
 	}
 }
 

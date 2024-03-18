@@ -15,6 +15,9 @@ type LogFileItem struct {
 	Name string `json:"name"`
 	Size int64 `json:"size"`
 	CreationTime string `json:"creationTime"`
+	Status string `json:"status"`
+	DecodeID string `json:"decodeID"`
+	DecodedFile string `json:"decodedFile"`
 }
 
 // GetFileList returns a list of log files in the specified path.
@@ -136,4 +139,29 @@ func GetLogFileFromDB(file LogFileItem,crvClient *crv.CRVClient,token string)(ma
 	}
 
 	return fileInfo,nil
+}
+
+func DecodeLogFile(logFles *[]string,dc *DecoderClient,crvClient *crv.CRVClient,token string)(error){
+	//获取解码器状态
+	status,err:=dc.GetStatus()
+	if err!=nil {
+		return err
+	}
+
+	if status.Status!="ready" {
+		return errors.New("当前解码器状态为："+status.Status+", 无法解析文件")
+	}
+
+	//解析文件
+	res,err:=dc.DecodeFile(logFles)
+	if err!=nil {
+		return err
+	}
+
+	if res.Res!="accept" {
+		return errors.New("解码器返回错误，错误信息："+res.Cause)
+	}
+
+	//创建解析记录
+	return SaveDecodeRecordToDB(res,crvClient,token)
 }

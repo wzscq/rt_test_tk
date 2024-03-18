@@ -31,6 +31,7 @@ const (
 	ResultSendTestCaseError = 10200014
 	ResultInvokeDeviceAPIError = 10200015
 	ResultUpdateLogFileError = 10200016
+	ResultDecodeLogFileError = 10200017
 )
 
 var errMsg = map[int]CommonRsp{
@@ -117,6 +118,11 @@ var errMsg = map[int]CommonRsp{
 	ResultUpdateLogFileError:CommonRsp{
 		ErrorCode:ResultUpdateLogFileError,
 		Message:"更新日志文件信息失败",
+		Error:true,
+	},
+	ResultDecodeLogFileError:CommonRsp{
+		ErrorCode:ResultDecodeLogFileError,
+		Message:"解析日志文件失败",
 		Error:true,
 	},
 }

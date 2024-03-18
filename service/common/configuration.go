@@ -54,6 +54,7 @@ type MqttConf struct {
 	UploadMeasurementMetrics string `json:"uploadMeasurementMetrics"`
 	UploadDeviceStatus string `json:"uploadDeviceStatus"`
 	SendTestCaseTopic string `json:"sendTestCaseTopic"`
+	DecodeResutlTopic string `json:"decodeResutlTopic"`
 }
 
 type TestfileConf struct {
@@ -63,6 +64,7 @@ type TestfileConf struct {
 
 type TestLogFileConf struct {
 	Path string `json:"path"`
+	DecoderUrl string `json:"decoderUrl"`
 }
 
 type FtpConf struct {

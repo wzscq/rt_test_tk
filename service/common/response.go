@@ -32,6 +32,7 @@ const (
 	ResultInvokeDeviceAPIError = 10200015
 	ResultUpdateLogFileError = 10200016
 	ResultDecodeLogFileError = 10200017
+	ResultDownloadFileError = 10200018
 )
 
 var errMsg = map[int]CommonRsp{
@@ -123,6 +124,11 @@ var errMsg = map[int]CommonRsp{
 	ResultDecodeLogFileError:CommonRsp{
 		ErrorCode:ResultDecodeLogFileError,
 		Message:"解析日志文件失败",
+		Error:true,
+	},
+	ResultDownloadFileError:CommonRsp{
+		ErrorCode:ResultDownloadFileError,
+		Message:"下载文件失败",
 		Error:true,
 	},
 }

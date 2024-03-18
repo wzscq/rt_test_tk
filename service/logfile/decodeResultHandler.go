@@ -3,6 +3,7 @@ package logfile
 import (
 	"rt_test_service/crv"
 	"encoding/json"
+	"log"
 )
 
 type DecodeResultHandler struct {
@@ -22,6 +23,9 @@ func (drh *DecodeResultHandler) HandleDecodeResult(result string) {
 	err := json.Unmarshal([]byte(result), &decodeStatus)
 	//update db
 	if err != nil {
-		UpdateDecodeStatus(&decodeStatus, drh.CRVClient,"")
+		log.Println("HandleDecodeResult error: ", err)
+		return
 	}
+
+	UpdateDecodeStatus(&decodeStatus, drh.CRVClient,"")
 }

@@ -64,6 +64,7 @@ type TestfileConf struct {
 
 type TestLogFileConf struct {
 	Path string `json:"path"`
+	DecodedPath string `json:"decodedPath"`
 	DecoderUrl string `json:"decoderUrl"`
 }
 

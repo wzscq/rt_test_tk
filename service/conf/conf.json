@@ -14,8 +14,8 @@
     },
     "mqtt":{
         "broker":"182.42.81.6",
-        "port":1983,
-        "wsPort":9101,
+        "port":1783,
+        "wsPort":8901,
         "user":"mosquitto",
         "password":"123456",
         "uploadMeasurementMetrics":"realtime_measurement_reporting",
@@ -36,7 +36,8 @@
     },
     "testLogFile":{
         "path":"./logfile/",
-        "decoderUrl":"http://192.168.100.107:5000/"
+        "decodedPath":"./decoder/",
+        "decoderUrl":"http://182.42.81.6:5000/"
     },
     "map":{
         "center":[121.5,30.9],

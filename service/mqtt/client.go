@@ -69,7 +69,8 @@ func (mqc *MQTTClient) reconnectingHandler(Client mqtt.Client,opts *mqtt.ClientO
 }
 
 func (mqc *MQTTClient) OnDecodeResutl(Client mqtt.Client, msg mqtt.Message){
-	log.Println("MQTTClient DecodeResutlTopic ",msg.Topic())
+	log.Println("MQTTClient OnDecodeResutl ",msg.Topic(),string(msg.Payload()))
+
 	if mqc.Handler != nil {
 		mqc.Handler.HandleDecodeResult(string(msg.Payload()))
 	}

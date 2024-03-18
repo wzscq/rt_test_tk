@@ -27,7 +27,7 @@ type DecodeFileRequest struct {
 type DecodeFileResponse struct {
 	Res string `json:"res"`
 	Cause string `json:"cause"`
-	Unixtime int64 `json:"unixtime"`
+	ID int64 `json:"id"`
 }
 
 type DecoderClient struct {
@@ -69,11 +69,19 @@ func (dc *DecoderClient) GetStatus()(*DecoderStatus, error) {
 }
 
 func (dc *DecoderClient) DecodeFile(files *[]string)(*DecodeFileResponse, error) {
+	logFile:=make([]string, len(*files))
+	for i, file:=range *files{
+		logFile[i]="http://192.168.100.107/glogs/glogs/09b59cee155449dca0de423adc4bc1a0/glqlog files/"+file
+	}
+
 	decodeFileRequest:=&DecodeFileRequest{
-		Logfiles: files,
+		Logfiles: &logFile,
 		Unixtime: time.Now().Unix(),
 	}
 	reqJson, _ := json.Marshal(decodeFileRequest)
+
+	log.Println("DecoderClient DecodeFile request", string(reqJson))
+
 	postBody:=bytes.NewBuffer(reqJson)
 	req, err := http.NewRequest("POST", dc.URL+URL_DECODE_FILE, postBody)
 	if err != nil {
@@ -104,6 +112,6 @@ func (dc *DecoderClient) DecodeFile(files *[]string)(*DecodeFileResponse, error)
 	resultJson, _ := json.Marshal(res)
 	log.Println(string(resultJson))
 
-	log.Println("end DecoderClient GetStatus success")
+	log.Println("end DecoderClient DecodeFile success")
 	return res, nil	
 }

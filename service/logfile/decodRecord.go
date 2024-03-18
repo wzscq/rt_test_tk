@@ -21,6 +21,7 @@ func GetDeodeRecordFromDB(decodeID int64,crvClient *crv.CRVClient,token string)(
 		ModelID: MODELID_DECODE_REC,
 		Fields:  &[]map[string]interface{}{
 			{"field": "id"},
+			{"field": "decoded_file"},
 			{"field": "version"},
 		},
 		Filter:  &filter,
@@ -61,7 +62,7 @@ func SaveDecodeRecordToDB(decodeRes *DecodeFileResponse,crvClient *crv.CRVClient
 		ModelID: MODELID_DECODE_REC,
 		List:    &[]map[string]interface{}{
 			map[string]interface{}{
-				"id":decodeRes.Unixtime,
+				"id":decodeRes.ID,
 				"_save_type":"create",
 			},
 		},

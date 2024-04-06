@@ -35,6 +35,7 @@ type DecoderClient struct {
 }
 
 func (dc *DecoderClient) GetStatus()(*DecoderStatus, error) {
+	log.Println("DecoderClient GetStatus start ...")
 	req, err := http.NewRequest("GET", dc.URL+URL_GET_STATUS, nil)
 	if err != nil {
 		log.Println("DecoderClient GetStatus error", err)

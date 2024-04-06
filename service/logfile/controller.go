@@ -56,6 +56,7 @@ func (lfc *LogFileController) update(c *gin.Context) {
 }
 
 func (lfc *LogFileController) decode(c *gin.Context) {
+	log.Println("LogFileController decode start ...")
 	var header crv.CommonHeader
 	if err := c.ShouldBindHeader(&header); err != nil {
 		log.Println(err)

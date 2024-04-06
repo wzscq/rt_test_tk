@@ -20,7 +20,7 @@
         "password":"123456",
         "uploadMeasurementMetrics":"realtime_measurement_reporting",
         "uploadDeviceStatus":"realtime_device_status",
-        "sendTestCaseTopic":"run_test_case/",
+        "sendTestCaseTopic":"Command",
         "decodeResutlTopic":"decoderResult"
     },
     "ftp":{

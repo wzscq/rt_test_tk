@@ -38,11 +38,30 @@ export default function PropertyGrid({obj,title}){
 
   const rows=[];
 
+  const isObject = obj => {
+    return typeof obj === 'object' && obj !== null && !Array.isArray(obj)
+  }
+
   Object.keys(obj).forEach(key=>{
     console.log('obj keys:',key);
+    let value=obj[key];
+    if(isObject(value)){
+      value=JSON.stringify(value); 
+    }
+
+    if(value===null){
+      value='';
+    }
+
+    if(value===undefined){
+      value='';
+    } 
+
+    value=value.toString();
+
     rows.push((<div className='row' key={key}>
       <div className='col name' style={{width:(splitLeft-5)}}>{key}</div>
-      <div className='col value' style={{width:'calc(100% - '+(splitLeft+6)+'px)'}}>{obj[key]}</div>
+      <div className='col value' style={{width:'calc(100% - '+(splitLeft+6)+'px)'}}>{value}</div>
     </div>));
   });
 
@@ -55,7 +74,7 @@ export default function PropertyGrid({obj,title}){
         <div className='value' style={{width:'calc(100% - '+(splitLeft+1)+'px)'}}>value</div>
     </div>
     <div className='property-grid-content'>
-      {rows}
+      {rows.length>0?rows:null}
       <div 
         ref={refSplitBar}
         className="property-grid-split"  

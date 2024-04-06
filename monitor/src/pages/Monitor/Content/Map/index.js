@@ -18,6 +18,9 @@ import {addDataItem,setCommandResult} from '../../../../redux/dataSlice';
 import './index.css';
 
 var g_MQTTClient=null;
+var g_mapSource=null;
+var g_map=null;
+var g_featureid=0;
 
 export default function MapWrapper(){
   const dispatch=useDispatch();
@@ -25,6 +28,49 @@ export default function MapWrapper(){
   const mapElement = useRef(null);
   const tipEle = useRef(null);
   const map = useRef(null); //地图全局变量
+
+  const updateMapSource=(data)=>{
+    console.log("updateMapSource:",data);
+    const gps=data?.testData?.gps;
+    console.log("updateMapSource gps:",gps);
+    if(gps===undefined) return;
+
+    if(g_mapSource===null) return;
+    const point=[gps.longitude,gps.latitude];
+
+    console.log("updateMapSource point:",point);
+
+    const circleFeature = new Feature({
+      geometry: new Point(transform(point,'EPSG:4326','EPSG:3857')),
+      id: g_featureid++
+    });
+
+    const fill = new Fill({
+      color: 'rgba(255,0,0,1)',
+    });
+    const stroke = new Stroke({
+      color: '#3399CC',
+      width: 1.25,
+    });
+
+    const iconStyle=new Style({
+      image: new Circle({
+        fill: fill,
+        stroke: stroke,
+        radius: 5,
+      }),
+      fill: fill,
+      stroke: stroke,
+    })
+    
+    circleFeature.setStyle(iconStyle)
+    g_mapSource.addFeature(circleFeature)
+
+    if(map.current){
+      const center=transform(point,'EPSG:4326','EPSG:3857');
+      map.current.getView().setCenter(center);
+    }
+  }
   
 
   useEffect(()=>{
@@ -62,12 +108,23 @@ export default function MapWrapper(){
             } else {
               console.log("subscribe topics error :"+err.toString());
             }
-        });
+          });
+
+          g_MQTTClient.subscribe("ping_result", (err) => {
+            if(!err){
+              console.log("subscribe success. topic:ping_result");
+            } else {
+              console.log("subscribe topics error :"+err.toString());
+            }
+          });          
       });
       g_MQTTClient.on('message', (topic, payload, packet) => {
-          console.log("receiconsolleve message topic :"+topic+" content :"+payload.toString());
+          console.log("receive message topic :"+topic+" content :"+payload.toString());
           if(topic===mqttConf.uploadMeasurementMetrics){
             dispatch(addDataItem(JSON.parse(payload.toString())));
+            updateMapSource(JSON.parse(payload.toString()));
+          } else if (topic==='ping_result') {
+            console.log("ping_result:",payload.toString());
           } else {
             dispatch(setCommandResult(JSON.parse(payload.toString())));
           }
@@ -108,6 +165,7 @@ export default function MapWrapper(){
 
     const circleFeature = new Feature({
       geometry: new Point(transform(mapConf.center,'EPSG:4326','EPSG:3857')),
+      id: g_featureid++
     });
 
     const fill = new Fill({
@@ -131,10 +189,12 @@ export default function MapWrapper(){
     circleFeature.setStyle(iconStyle);
     circleFeature.set('TIP_TEXT', 'This is the center of the map');
 
+    g_mapSource=new VectorSource({
+      features: [circleFeature]
+    })
+
     const ectorLayer=new VectorLayer({
-      source: new VectorSource({
-        features: [circleFeature],
-      }),
+      source: g_mapSource
     });
 
     map.current.addLayer(ectorLayer);

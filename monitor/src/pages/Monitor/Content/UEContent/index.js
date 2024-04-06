@@ -11,6 +11,7 @@ export default function UEContent(){
     const deviceInfo={...data.testData};
     delete deviceInfo.measures;
     delete deviceInfo.throughput;
+    delete deviceInfo.gps;
 
     const measures={...data?.testData?.measures};
     const throughput={...data?.testData?.throughput};
@@ -18,13 +19,13 @@ export default function UEContent(){
     return (
         <SplitPane dir='ltr' initialSizes={[50,50]} split="vertical" collapse={false}>
             <SplitPane split="horizontal" initialSizes={[20,30,50]} collapse={false}>
-                <PropertyGrid obj={commandResult} title="测试执行结果"/>
+                <PropertyGrid obj={commandResult??{}} title="测试执行结果"/>
                 <PropertyGrid obj={useCase} title="测试用例"/>
                 <PropertyGrid obj={deviceInfo} title="设备信息"/>
             </SplitPane>
             <SplitPane split="horizontal" initialSizes={[20,80]} collapse={false}>
-                <PropertyGrid obj={throughput} title="速率"/>
-                <PropertyGrid obj={measures} title="测量指标"/>
+                <PropertyGrid obj={throughput??{}} title="速率"/>
+                <PropertyGrid obj={measures??{}} title="测量指标"/>
             </SplitPane>
         </SplitPane>
     );

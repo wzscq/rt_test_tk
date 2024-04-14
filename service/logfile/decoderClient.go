@@ -72,7 +72,7 @@ func (dc *DecoderClient) GetStatus()(*DecoderStatus, error) {
 func (dc *DecoderClient) DecodeFile(files *[]string)(*DecodeFileResponse, error) {
 	logFile:=make([]string, len(*files))
 	for i, file:=range *files{
-		logFile[i]="http://192.168.100.107/qlogs/qlogs/09b59cee155449dca0de423adc4bc1a0/qlog_files/"+file
+		logFile[i]="http://192.168.4.111/qlogs/qlogs/09b59cee155449dca0de423adc4bc1a0/qlog_files/"+file
 	}
 
 	decodeFileRequest:=&DecodeFileRequest{

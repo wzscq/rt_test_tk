@@ -31,7 +31,7 @@ type TestFilePool struct {
 
 type TestData struct {
 	GPS map[string]interface{} `json:"gps"`
-	Result string `json:"result"`
+	Result interface{} `json:"result"`
 }
 
 type ReportData struct {
@@ -124,13 +124,22 @@ func (tfp *TestFilePool) CreateTestFile(deviceID, line string) *TestFile {
 	return GetTestFile(tfp.OutPath, deviceID, timeStamp)
 }
 
-func (tfp *TestFilePool) SaveResult(deviceID, result string) {
+func (tfp *TestFilePool) SaveResult(deviceID string, result map[string]interface{}) {
+	//这里需要枷锁做并发控制
+	resultByte, err := json.MarshalIndent(result, "", "    ")
+	var resultString string
+	if err != nil {
+		resultString=""
+	} else {
+		resultString = string(resultByte)
+	}
+
 	tfp.Mutex.Lock()
 	defer tfp.Mutex.Unlock()
 
 	tf := tfp.Pool[deviceID]
 	if tf != nil {
-		tf.Close(result)
+		tf.Close(resultString)
 		log.Println("SaveResult close test file with deviceID:" + tf.DeviceID)
 		delete(tfp.Pool, tf.DeviceID)
 		tfp.createCacheRecord(tf)
@@ -153,7 +162,16 @@ func (tfp *TestFilePool) HandleReportResult(report string) {
 
 	//如果msg_type是finaly，则结束测试，保存文件
 	if reportData.MsgType == "finally" {
-		tfp.SaveResult(reportData.ExampleCode, reportData.TestData.Result)
+		resultMap,ok:=reportData.TestData.Result.(map[string]interface{})
+		if ok {
+			tfp.SaveResult(reportData.ExampleCode, resultMap)
+		} else {
+			resultString,ok:=reportData.TestData.Result.(string)
+			if ok {
+				resultMap:=map[string]interface{}{"result":resultString}
+				tfp.SaveResult(reportData.ExampleCode, resultMap)
+			}
+		}
 	}	
 }
 

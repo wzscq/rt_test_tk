@@ -12,6 +12,10 @@ type EventHandler interface {
 	HandleDecodeResult(result string)
 }
 
+type ReportHandler interface {
+	HandleReportResult(result string)
+}
+
 type MQTTClient struct {
 	Broker string
 	User string
@@ -21,6 +25,7 @@ type MQTTClient struct {
 	Handler EventHandler
 	Client mqtt.Client
 	DecodeResutlTopic string
+	ReportHandler ReportHandler
 }
 
 func (mqc *MQTTClient) getClient()(mqtt.Client){
@@ -50,6 +55,9 @@ func (mqc *MQTTClient) connectHandler(client mqtt.Client){
 	log.Println("MQTTClient connectHandler connect status: ",client.IsConnected())
 	mqc.Client=client
 	if client.IsConnected() {
+		log.Println("MQTTClient Subscribe topic:"+mqc.UploadMeasurementMetrics)
+		client.Subscribe(mqc.UploadMeasurementMetrics,0,mqc.OnReportResutl)
+
 		topic:=mqc.DecodeResutlTopic
 		log.Println("MQTTClient Subscribe topic:"+topic)
 		client.Subscribe(topic,0,mqc.OnDecodeResutl)
@@ -73,6 +81,14 @@ func (mqc *MQTTClient) OnDecodeResutl(Client mqtt.Client, msg mqtt.Message){
 
 	if mqc.Handler != nil {
 		mqc.Handler.HandleDecodeResult(string(msg.Payload()))
+	}
+}
+
+func (mqc *MQTTClient) OnReportResutl(Client mqtt.Client, msg mqtt.Message){
+	log.Println("MQTTClient OnReportResutl ",msg.Topic(),string(msg.Payload()))
+
+	if mqc.Handler != nil {
+		mqc.ReportHandler.HandleReportResult(string(msg.Payload()))
 	}
 }
 

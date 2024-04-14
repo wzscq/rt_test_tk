@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"rt_test_service/common"
 	"rt_test_service/crv"
+	"fmt"
 	//"strconv"
 )
 
@@ -45,6 +46,7 @@ type GetPointsReq struct {
 
 type TestFileController struct {
 	OutPath string
+	CRVClient *crv.CRVClient
 }
 
 func (tfc *TestFileController) GetContent(c *gin.Context) {
@@ -121,9 +123,61 @@ func (tfc *TestFileController) GetPoints(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, rsp)
 }
 
+func (tfc *TestFileController) download(c *gin.Context) {
+	var header crv.CommonHeader
+	if err := c.ShouldBindHeader(&header); err != nil {
+		log.Println(err)
+		rsp:=common.CreateResponse(common.CreateError(common.ResultWrongRequest,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("TestFileController download wrong request")
+		return
+	}	
+
+	var rep crv.CommonReq
+	if err := c.ShouldBind(&rep); err != nil {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultWrongRequest,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("TestFileController download with error")
+		log.Println(err)
+		return
+  }
+
+	if rep.SelectedRowKeys == nil || len(*rep.SelectedRowKeys) == 0 {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultWrongRequest,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("TestFileController download with error: SelectedRowKeys is empty")
+		return
+	}
+
+	//id:=(*rep.SelectedRowKeys)[0]
+	//string to int64 
+	id:=(*rep.SelectedRowKeys)[0]
+
+	file,errorCode:=GetTestFileFromDB(id, header.Token,tfc.CRVClient)
+	if errorCode != common.ResultSuccess {
+		rsp:=common.CreateResponse(common.CreateError(errorCode,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("LogFileController download with error")
+		return
+	}
+
+	
+
+	fileName:=file.DeviceID+"_"+file.TimeStamp+".zip"
+	//替换掉文件固定的前缀
+	log.Println("fileName:",fileName)
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
+
+	fileName = tfc.OutPath +"/"+ fileName
+	log.Println("decodedFileName with path:",fileName)
+
+	c.File(fileName)
+}
+
 //Bind bind the controller function to url
 func (tfc *TestFileController) Bind(router *gin.Engine) {
 	log.Println("Bind CacheFileController")
 	router.POST("/testfile/GetContent", tfc.GetContent)
 	router.POST("/testfile/GetPoints", tfc.GetPoints)
+	router.POST("/testfile/download", tfc.download)
 }

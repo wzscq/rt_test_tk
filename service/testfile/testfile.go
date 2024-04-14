@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"archive/zip"
 )
 
 type TestFile struct {
@@ -29,16 +30,84 @@ type Point struct {
 	Value float64 `json:"value"`
 }
 
-func (tf *TestFile) Close() {
-	indexFileName := tf.OutPath + "/" + tf.DeviceID + "_" + tf.TimeStamp + ".idx"
+func (tf *TestFile) Close(result string) {
+	indexFileName := tf.OutPath + "/" + tf.DeviceID + "_" + tf.TimeStamp + ".result"
 	idxFile, err := os.OpenFile(indexFileName, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		log.Printf("Open file failed [Err:%s]\n", err.Error())
 	} else {
-		idxFile.WriteString(strconv.FormatInt(tf.LineCount, 10) + "\n")
+		idxFile.WriteString(result)
 		idxFile.Close()
 	}
 	tf.ContentFile.Close()
+
+	tf.ZipResult()
+	tf.DeleteFile()
+}
+
+func (tf *TestFile) DeleteFile() {
+	os.Remove(tf.OutPath + "/" + tf.DeviceID + "_" + tf.TimeStamp + ".gps")
+	os.Remove(tf.OutPath + "/" + tf.DeviceID + "_" + tf.TimeStamp + ".result")
+}
+
+func (tf *TestFile) ZipResult() {
+	// Create a buffer to write our archive to.
+	zipFileName:=tf.OutPath + "/" + tf.DeviceID + "_" + tf.TimeStamp + ".zip"
+	zipFile,err:=os.Create(zipFileName)
+	if err!=nil{
+		log.Printf("Open file failed [Err:%s]\n", err.Error())
+		return
+	}
+	defer zipFile.Close()
+	// Create a new zip archive.
+	zipWriter := zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+	
+	gpsFileName:=tf.DeviceID + "_" + tf.TimeStamp + ".gps"
+	fileHeader:=&zip.FileHeader{
+		Name:gpsFileName,
+	}
+	headerWriter,err:=zipWriter.CreateHeader(fileHeader)
+	if err!=nil {
+		log.Println(err)
+		return
+	} 
+
+	f, err := os.Open(tf.OutPath + "/" + gpsFileName)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer f.Close()
+
+	_, err = io.Copy(headerWriter, f)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	resultFileName:=tf.DeviceID + "_" + tf.TimeStamp + ".result"
+	fileHeader=&zip.FileHeader{
+		Name:resultFileName,
+	}
+	headerWriter,err=zipWriter.CreateHeader(fileHeader)
+	if err!=nil {
+		log.Println(err)
+		return
+	} 
+
+	f, err = os.Open(tf.OutPath + "/" + resultFileName)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer f.Close()
+
+	_, err = io.Copy(headerWriter, f)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }
 
 func (tf *TestFile) CloseReadOnly() {
@@ -217,7 +286,7 @@ func (tf *TestFile) GetPoints(indicator Indicator) []*Point {
 }
 
 func GetTestFile(outPath string, deviceID string, timeStamp string) *TestFile {
-	contentFileName := outPath + "/" + deviceID + "_" + timeStamp + ".content"
+	contentFileName := outPath + "/" + deviceID + "_" + timeStamp + ".gps"
 	contentFile, err := os.OpenFile(contentFileName, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		log.Printf("Open file failed [Err:%s]\n", err.Error())

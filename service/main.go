@@ -41,7 +41,8 @@ func main() {
 	}
 
 	//初始化测试文件处理对象
-	//tfp := testfile.InitTestFilePool(conf.TestFile.Path, conf.TestFile.IdleBeforeClose, crvClient)
+	tfp := testfile.InitTestFilePool(conf.TestFile.Path, conf.TestFile.IdleBeforeClose, crvClient)
+	
 	decodeResultHandler:=&logfile.DecodeResultHandler{
 		CRVClient: crvClient,
 	}
@@ -55,6 +56,7 @@ func main() {
 		Handler:                  decodeResultHandler,
 		DecodeResutlTopic:        conf.Mqtt.DecodeResutlTopic,
 		Port:                     conf.Mqtt.Port,
+		ReportHandler:            tfp,
 	}
 	mqttClient.Init()
 
@@ -63,6 +65,7 @@ func main() {
 	
 	tc := testfile.TestFileController{
 		OutPath: conf.TestFile.Path,
+		CRVClient: crvClient,
 	}
 	tc.Bind(router)
 

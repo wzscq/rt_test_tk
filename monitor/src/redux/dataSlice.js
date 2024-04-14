@@ -49,7 +49,9 @@ const iperf_result = {
       imei: "867826050500420", 
       imsi: "460001933146754", 
       operator: "CHINA MOBILE"}
-    }
+    },
+    commandResult:{},
+    pingRec:[]
 }
 
 const iperf_result_1={
@@ -67,7 +69,9 @@ const iperf_result_1={
       imei: "867826050500420", 
       imsi: "460001933146754", 
       operator: "CHINA MOBILE"}
-    }
+  },
+  commandResult:{},
+  pingRec:[]
 }
 
 const ftp = {
@@ -105,7 +109,8 @@ const ftp = {
       }
     }
   },
-  commandResult:{}
+  commandResult:{},
+  pingRec:[]
 }
 
 const initialState = iperf_result_1;
@@ -127,13 +132,19 @@ export const dataSlice = createSlice({
       },
       setCommandResult:(state,action)=>{
         state.commandResult=action.payload;
+        state.data={};
+        state.pingRec=[];
+      },
+      setPingRec:(state,action)=>{
+        state.pingRec=[...state.pingRec,action.payload];
       }
     }
 });
 
 export const { 
   addDataItem,
-  setCommandResult
+  setCommandResult,
+  setPingRec
 } = dataSlice.actions
 
 export default dataSlice.reducer

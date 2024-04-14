@@ -2,11 +2,11 @@ package testfile
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"rt_test_service/crv"
 	"sync"
 	"time"
+	"rt_test_service/common"
 )
 
 type CaseProgress struct {
@@ -27,6 +27,17 @@ type TestFilePool struct {
 	IdleBeforeClose time.Duration
 	Mutex           sync.Mutex
 	CRVClient       *crv.CRVClient
+}
+
+type TestData struct {
+	GPS map[string]interface{} `json:"gps"`
+	Result string `json:"result"`
+}
+
+type ReportData struct {
+	ExampleCode string `json:"exampleCode"`
+    MsgType string `json:"msg_type"`
+	TestData TestData `json:"testData"`
 }
 
 func InitTestFilePool(outPath string, idleBeforeClose string, crvClient *crv.CRVClient) *TestFilePool {
@@ -73,7 +84,7 @@ func (tfp *TestFilePool) Scan() {
 		tfp.Mutex.Lock()
 		for _, tf := range tfp.Pool {
 			if tf.LineCount == tf.lastLineCount {
-				tf.Close()
+				tf.Close("")
 				log.Println("TestFilePool.Scan close test file with deviceID:" + tf.DeviceID)
 				delete(tfp.Pool, tf.DeviceID)
 				tfp.createCacheRecord(tf)
@@ -103,28 +114,97 @@ func (tfp *TestFilePool) WriteDeviceTestLine(deviceID, line string) {
 	tf.WriteLine(line)
 }
 
-func GetLineTimeStamp(line string) string {
-	//解析line，获取时间戳
-	LineData := LineData{}
-	err := json.Unmarshal([]byte(line), &LineData)
-	if err != nil {
-		log.Println("GetLineTimeStamp Unmarshal failed:", err)
-		return ""
-	}
-
-	if len(LineData.Data) == 0 {
-		log.Println("GetLineTimeStamp LineData.Data is empty")
-		return ""
-	}
-
-	return fmt.Sprintf("%d", LineData.Data[0].CaseProgress.SessionID)
+func GetLineTimeStamp() string {
+	//获取当前时间戳
+	return time.Now().Format("20060102150405")
 }
 
 func (tfp *TestFilePool) CreateTestFile(deviceID, line string) *TestFile {
-	timeStamp := GetLineTimeStamp(line)
+	timeStamp := GetLineTimeStamp()
 	return GetTestFile(tfp.OutPath, deviceID, timeStamp)
 }
 
-func (tfp *TestFilePool) DealDeviceTestMessage(deviceID, line string) {
-	tfp.WriteDeviceTestLine(deviceID, line)
+func (tfp *TestFilePool) SaveResult(deviceID, result string) {
+	tfp.Mutex.Lock()
+	defer tfp.Mutex.Unlock()
+
+	tf := tfp.Pool[deviceID]
+	if tf != nil {
+		tf.Close(result)
+		log.Println("SaveResult close test file with deviceID:" + tf.DeviceID)
+		delete(tfp.Pool, tf.DeviceID)
+		tfp.createCacheRecord(tf)
+	}
+}
+
+func (tfp *TestFilePool) HandleReportResult(report string) {
+	//decode to reportData
+	reportData := ReportData{}
+	err := json.Unmarshal([]byte(report), &reportData)
+	if err != nil {
+		log.Println("HandleReportResult Unmarshal failed:", err)
+		return
+	}
+
+	if reportData.TestData.GPS!=nil {
+		line, _ := json.Marshal(reportData.TestData.GPS)
+		tfp.WriteDeviceTestLine(reportData.ExampleCode, string(line))
+	}
+
+	//如果msg_type是finaly，则结束测试，保存文件
+	if reportData.MsgType == "finally" {
+		tfp.SaveResult(reportData.ExampleCode, reportData.TestData.Result)
+	}	
+}
+
+func GetTestFileFromDB(id,token string,crvClient *crv.CRVClient)(*TestFile,int) {
+	commonRep := crv.CommonReq{
+		ModelID: "rt_cache_test_file",
+		Filter: &map[string]interface{}{
+			"id": map[string]interface{}{
+				"Op.eq": id,
+			},
+		},
+		Fields: &[]map[string]interface{}{
+			{"field": "device_id"},
+			{"field": "timestamp"},
+		},
+	}
+
+	rsp,errorCode:=crvClient.Query(&commonRep, token)
+	if errorCode!=common.ResultSuccess {
+		return nil,errorCode
+	}
+
+	if rsp.Error {
+		log.Println("GetTestFileFromDB error:",rsp.ErrorCode,rsp.Message)
+		return nil,common.ResultDownloadFileError
+	}
+
+	resLst,ok:=rsp.Result.(map[string]interface{})["list"].([]interface{})
+	if !ok {
+		log.Println("GetTestFileFromDB error: no list in rsp.")
+		return nil,common.ResultDownloadFileError
+	}
+
+	if len(resLst)==0 {
+		log.Println("GetTestFileFromDB error: no list in rsp.")
+		return nil,common.ResultDownloadFileError
+	}
+
+	recInfo,ok:=resLst[0].(map[string]interface{})
+	if !ok {
+		log.Println("GetTestFileFromDB error: item is not map.")
+		return nil,common.ResultDownloadFileError
+	}
+
+	deviceID,_:=recInfo["device_id"].(string)
+	timeStamp,_:=recInfo["timestamp"].(string)
+
+	tf:=&TestFile{
+		DeviceID:    deviceID,
+		TimeStamp:   timeStamp,
+	}
+
+	return tf,common.ResultSuccess
 }

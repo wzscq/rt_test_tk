@@ -13,7 +13,7 @@ import { transform } from "ol/proj";
 import mqtt from 'mqtt';
 
 import {setMqttStatus} from '../../../../redux/mqttSlice';
-import {addDataItem,setCommandResult} from '../../../../redux/dataSlice';
+import {addDataItem,setCommandResult,setPingRec} from '../../../../redux/dataSlice';
 
 import './index.css';
 
@@ -125,6 +125,7 @@ export default function MapWrapper(){
             updateMapSource(JSON.parse(payload.toString()));
           } else if (topic==='ping_result') {
             console.log("ping_result:",payload.toString());
+            dispatch(setPingRec(JSON.parse(payload.toString())));
           } else {
             dispatch(setCommandResult(JSON.parse(payload.toString())));
           }

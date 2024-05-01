@@ -9,6 +9,56 @@ import (
 
 const MODELID_DECODE_REC = "rt_decode_record"
 
+func GetDecodingTaskCount(crvClient *crv.CRVClient,token string)(int,error){
+	//从数据库中查询这个文件
+	/*filter := map[string]interface{}{
+		"Op.and": []map[string]interface{}{
+			map[string]interface{}{
+				"status":map[string]interface{}{
+					"Op.ne": "success",
+				},
+			},
+			map[string]interface{}{
+				"status":map[string]interface{}{
+					"Op.ne": "fail",
+				},
+			},
+		},
+	}*/
+
+	filter := map[string]interface{}{
+		"status":map[string]interface{}{
+			"Op.eq": "ongoing",
+		},
+	}
+
+	commonRep := crv.CommonReq{
+		ModelID: MODELID_DECODE_REC,
+		Fields:  &[]map[string]interface{}{
+			{"field": "id"},
+		},
+		Filter:  &filter,
+	}
+
+	rsp, commonErr := crvClient.Query(&commonRep, token)
+	if commonErr != common.ResultSuccess {
+		return 0,errors.New("GetDeodeRecordFromDB error")
+	}
+
+	if rsp.Error == true {
+		log.Println("GetDeodeRecordFromDB error:", rsp.ErrorCode, rsp.Message)
+		return 0,errors.New("GetDeodeRecordFromDB error")
+	}
+
+	resLst, ok := rsp.Result.(map[string]interface{})["list"].([]interface{})
+	if !ok {
+		log.Println("GetDeodeRecordFromDB error: no list in rsp.")
+		return 0,nil
+	}
+
+	return len(resLst),nil
+}
+
 func GetDeodeRecordFromDB(decodeID int64,crvClient *crv.CRVClient,token string)(map[string]interface{},error){
 	//从数据库中查询这个文件
 	filter := map[string]interface{}{

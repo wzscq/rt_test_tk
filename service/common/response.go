@@ -33,6 +33,9 @@ const (
 	ResultUpdateLogFileError = 10200016
 	ResultDecodeLogFileError = 10200017
 	ResultDownloadFileError = 10200018
+	ResultTestCaseIsRunning = 10200019
+	ResultGetRunningDecodingError = 10200020
+	ResultHasRunningDecoding = 10200021
 )
 
 var errMsg = map[int]CommonRsp{
@@ -129,6 +132,21 @@ var errMsg = map[int]CommonRsp{
 	ResultDownloadFileError:CommonRsp{
 		ErrorCode:ResultDownloadFileError,
 		Message:"下载文件失败",
+		Error:true,
+	},
+	ResultTestCaseIsRunning:CommonRsp{
+		ErrorCode:ResultTestCaseIsRunning,
+		Message:"已经有测试用例正在执行中，请稍后再试",
+		Error:true,
+	},
+	ResultGetRunningDecodingError:CommonRsp{
+		ErrorCode:ResultGetRunningDecodingError,
+		Message:"获取正在解码的任务数量失败",
+		Error:true,
+	},
+	ResultHasRunningDecoding:CommonRsp{
+		ErrorCode:ResultHasRunningDecoding,
+		Message:"当前有正在解码的任务，请稍后再试",
 		Error:true,
 	},
 }

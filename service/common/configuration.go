@@ -66,6 +66,7 @@ type TestLogFileConf struct {
 	Path string `json:"path"`
 	DecodedPath string `json:"decodedPath"`
 	DecoderUrl string `json:"decoderUrl"`
+	GetLogFileUrl string `json:"getLogFileUrl"`
 }
 
 type FtpConf struct {

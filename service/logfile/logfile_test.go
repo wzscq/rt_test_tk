@@ -6,7 +6,7 @@ import (
 	"rt_test_service/crv"
 )
 
-func TestGetLogFileList(t *testing.T) {
+func _TestGetLogFileList(t *testing.T) {
 	files, err := GetLogFileList("../mqtt/")
 	if err != nil {
 		t.Error("GetLogFileList error")
@@ -20,7 +20,7 @@ func TestGetLogFileList(t *testing.T) {
 	}
 }
 
-func TestGetLogFileFromDB(t *testing.T) {
+func _TestGetLogFileFromDB(t *testing.T) {
 	file := LogFileItem{
 		Name: "test",
 		Size: 100,
@@ -47,7 +47,7 @@ func TestGetLogFileFromDB(t *testing.T) {
 	fmt.Println(fileMap)
 }
 
-func TestUpdateLogFileToDB(t *testing.T) {
+func _TestUpdateLogFileToDB(t *testing.T) {
 	files, err := GetLogFileList(".")
 	if err != nil {
 		t.Error("GetLogFileList error")

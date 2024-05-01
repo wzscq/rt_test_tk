@@ -27,6 +27,8 @@ type TestFilePool struct {
 	IdleBeforeClose time.Duration
 	Mutex           sync.Mutex
 	CRVClient       *crv.CRVClient
+	IsRunning       bool 
+	StartTime       time.Time
 }
 
 type TestData struct {
@@ -146,7 +148,26 @@ func (tfp *TestFilePool) SaveResult(deviceID string, result map[string]interface
 	}
 }
 
+func (tfp *TestFilePool) GetLock()(bool) {
+	if tfp.IsRunning == true {
+		//执行任务在规定时间内未更新时间则可能任务意外中断，需要重置
+		if time.Now().Sub(tfp.StartTime) < tfp.IdleBeforeClose {
+			return false
+		}
+	}
+	tfp.IsRunning = true
+	tfp.StartTime = time.Now()
+	return true
+}
+
+func (tfp *TestFilePool) ReleaseLock() {
+	tfp.IsRunning = false
+}
+
 func (tfp *TestFilePool) HandleReportResult(report string) {
+	//收到消息时更新时间，防止任务意外中断
+	tfp.StartTime=time.Now()
+
 	//decode to reportData
 	reportData := ReportData{}
 	err := json.Unmarshal([]byte(report), &reportData)
@@ -172,6 +193,8 @@ func (tfp *TestFilePool) HandleReportResult(report string) {
 				tfp.SaveResult(reportData.ExampleCode, resultMap)
 			}
 		}
+		//释放锁
+		tfp.ReleaseLock()
 	}	
 }
 

@@ -16,6 +16,7 @@ type DeviceController struct {
 	MQTTClient *mqtt.MQTTClient
 	MapConf *common.MapConf
 	DeviceClient *DeviceClient
+	TestLock TestLock
 }
 
 func (dc *DeviceController)getServerConf(c *gin.Context){
@@ -27,7 +28,7 @@ func (dc *DeviceController)getServerConf(c *gin.Context){
 	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
 	c.IndentedJSON(http.StatusOK, rsp)
 	log.Println("RobotController getServerConf")
-}
+}	
 
 func (dc *DeviceController)getTestCase(c *gin.Context){
 	var header ServerHeader
@@ -46,7 +47,7 @@ func (dc *DeviceController)getTestCase(c *gin.Context){
 		c.IndentedJSON(http.StatusOK, rsp)
 		log.Println("DeviceController getTestCase with error")
 		return
-  }
+  	}
 
 	//查询可下发的测试用例
 	rsp:=GetCommitedTestCase(dc.CRVClient,header.Token)
@@ -109,6 +110,14 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 		return
 	}
 
+	//判断是否已经有测试用例正在执行
+	if dc.TestLock.GetLock()==false {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultTestCaseIsRunning,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController runTestCase with error: test case is running")
+		return
+	}
+
 	//转换为下发指令
 	cmd:=GetTestCommand(tc)
 	
@@ -117,6 +126,7 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 	if err != nil {
 		rsp:=common.CreateResponse(common.CreateError(common.ResultSendTestCaseError,nil),nil)
 		c.IndentedJSON(http.StatusOK, rsp)
+		dc.TestLock.ReleaseLock()
 		log.Println("DeviceController runTestCase with error: send test case failed")
 		return
 	}
@@ -227,7 +237,7 @@ func (dc *DeviceController) Bind(router *gin.Engine) {
 	router.POST("/device/reboot", dc.deviceReboot)
 }
 
-func InitDeviceController(conf *common.Config,crvClient *crv.CRVClient,mqttClient *mqtt.MQTTClient,router *gin.Engine){
+func InitDeviceController(conf *common.Config,crvClient *crv.CRVClient,mqttClient *mqtt.MQTTClient,router *gin.Engine,testLock TestLock){
 	dc:=DeviceController{
 		CRVClient: crvClient,
 		MqttConf: &conf.Mqtt,
@@ -237,6 +247,7 @@ func InitDeviceController(conf *common.Config,crvClient *crv.CRVClient,mqttClien
 		DeviceClient: &DeviceClient{
 			ServerUrl: conf.DeviceClient.ServerUrl,
 		},
+		TestLock: testLock,
 	}
 
 	dc.Bind(router)

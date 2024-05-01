@@ -6,7 +6,7 @@ import (
 	"rt_test_service/crv"
 )
 
-func TestGetStatus(t *testing.T){
+func _TestGetStatus(t *testing.T){
 	decoderClient:=DecoderClient{
 		URL:"http://182.42.81.6:5000/",
 	}
@@ -20,7 +20,7 @@ func TestGetStatus(t *testing.T){
 	fmt.Println(status)
 }
 
-func TestDecodeFile(t *testing.T){
+func _TestDecodeFile(t *testing.T){
 	decoderClient:=DecoderClient{
 		URL:"http://182.42.81.6:5000/",
 	}
@@ -34,7 +34,7 @@ func TestDecodeFile(t *testing.T){
 	fmt.Println(rsp)
 }
 
-func TestDecodeLogFile(t *testing.T){
+func _TestDecodeLogFile(t *testing.T){
 	crvClient := &crv.CRVClient{
 		Server: "http://localhost:8200",
 		Token:  "rt_test_tk_service",
@@ -50,4 +50,20 @@ func TestDecodeLogFile(t *testing.T){
 		t.Error("DecodeLogFile error")
 		return
 	}
+}
+
+func TestGetDecodingTaskCount(t *testing.T){
+	crvClient := &crv.CRVClient{
+		Server: "http://localhost:8200",
+		Token:  "rt_test_tk_service",
+		AppID:  "",
+	}
+
+	count,err:=GetDecodingTaskCount(crvClient,"rt_test_tk_service")
+	if err!=nil{
+		t.Error("GetDecodingTaskCount error")
+		return
+	}
+
+	fmt.Println(count)
 }

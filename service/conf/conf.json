@@ -37,14 +37,15 @@
     "testLogFile":{
         "path":"./logfile/",
         "decodedPath":"./decoder/",
-        "decoderUrl":"http://182.42.81.6:5000/"
+        "decoderUrl":"http://182.42.81.6:5000/",
+        "getLogFileUrl":"http://192.168.4.111/qlogs/qlogs/09b59cee155449dca0de423adc4bc1a0/qlog_files/"
     },
     "map":{
         "center":[121.5,30.9],
         "zoom":10,
         "maxZoom":15,
         "minZoom":5,
-        "url1":"http://182.42.81.6:8303/rtservice/maptiles/{z}/{x}/{y}.png",
-        "url":"http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn$size=1&scl=1&style=7"
+        "url":"http://localhost:8300/maptiles/{z}/{x}/{y}.png",
+        "url1":"http://wprd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn$size=1&scl=1&style=7"
     }
 }

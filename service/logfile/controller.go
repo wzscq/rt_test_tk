@@ -73,7 +73,7 @@ func (lfc *LogFileController) decode(c *gin.Context) {
 		log.Println("LogFileController decode with error")
 		log.Println(err)
 		return
-  }
+  	}
 
 	if rep.SelectedRowKeys == nil || len(*rep.SelectedRowKeys) == 0 {
 		rsp:=common.CreateResponse(common.CreateError(common.ResultWrongRequest,nil),nil)
@@ -82,7 +82,23 @@ func (lfc *LogFileController) decode(c *gin.Context) {
 		return
 	}
 
-	err:=DecodeLogFile(rep.SelectedRowKeys, lfc.DC,lfc.CRVClient, header.Token)
+	//判断当前是否存在正在解码的任务
+	runningCount,err:=GetDecodingTaskCount(lfc.CRVClient, header.Token)
+	if err!=nil {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultGetRunningDecodingError,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("LogFileController decode with error: GetDecodingTaskCount error")
+		return
+	}
+
+	if runningCount>0 {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultHasRunningDecoding,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("LogFileController decode with error: there are decoding tasks running")
+		return
+	}
+
+	err=DecodeLogFile(rep.SelectedRowKeys, lfc.DC,lfc.CRVClient, header.Token)
 	if err != nil {
 		params:=map[string]interface{}{
 			"error":err.Error(),
@@ -177,6 +193,7 @@ func InitLogFileController(conf *common.Config,crvClient *crv.CRVClient,router *
 		DecodedPath: conf.TestLogFile.DecodedPath,
 		DC: &DecoderClient{
 			URL: conf.TestLogFile.DecoderUrl,
+			GetLogFileUrl: conf.TestLogFile.GetLogFileUrl,
 		},
 	}
 

@@ -38,7 +38,8 @@
         "path":"./logfile/",
         "decodedPath":"./decoder/",
         "decoderUrl":"http://182.42.81.6:5000/",
-        "getLogFileUrl":"http://192.168.4.111/qlogs/qlogs/09b59cee155449dca0de423adc4bc1a0/qlog_files/"
+        "getLogFileUrl":"http://192.168.4.111/qlogs/qlogs/09b59cee155449dca0de423adc4bc1a0/qlog_files/",
+        "scanDuration":"10s"
     },
     "map":{
         "center":[121.5,30.9],

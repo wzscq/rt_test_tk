@@ -7,6 +7,7 @@ import (
 	"log"
 	"errors"
 	"rt_test_service/common"
+	"time"
 )
 
 const MODELID_LOG_FILE = "rt_log_file"
@@ -164,4 +165,30 @@ func DecodeLogFile(logFles *[]string,dc *DecoderClient,crvClient *crv.CRVClient,
 
 	//创建解析记录
 	return SaveDecodeRecordToDB(res,crvClient,token)
+}
+
+func DeleteAllLogFiles(crvClient *crv.CRVClient,token string) {
+	//删除所有文件
+	commonRep := crv.CommonReq{
+		ModelID: MODELID_LOG_FILE,
+		Filter: &map[string]interface{}{
+			"create_time": map[string]interface{}{
+				"Op.lt": time.Now().Format("2000-01-01 00:00:00"),
+			},
+		},
+		SelectedRowKeys: &[]string{},
+		SelectAll:true,
+	}
+
+	crvClient.Delete(&commonRep, token)
+}
+
+func DeleteLogFileByName(name string,crvClient *crv.CRVClient,token string) {
+	//删除所有文件
+	commonRep := crv.CommonReq{
+		ModelID: MODELID_LOG_FILE,
+		SelectedRowKeys: &[]string{name},
+	}
+
+	crvClient.Delete(&commonRep, token)
 }

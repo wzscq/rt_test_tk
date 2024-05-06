@@ -52,7 +52,7 @@ func _TestDecodeLogFile(t *testing.T){
 	}
 }
 
-func TestGetDecodingTaskCount(t *testing.T){
+func _TestGetDecodingTaskCount(t *testing.T){
 	crvClient := &crv.CRVClient{
 		Server: "http://localhost:8200",
 		Token:  "rt_test_tk_service",

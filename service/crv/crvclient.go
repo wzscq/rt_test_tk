@@ -57,6 +57,7 @@ type CommonReq struct {
 	Sorter *[]Sorter `json:"sorter"`
 	SelectedRowKeys *[]string `json:"selectedRowKeys"`
 	Pagination *Pagination `json:"pagination"`
+	SelectAll        bool                      `json:"selectedAll"`
 }
 
 type CRVClient struct {
@@ -71,6 +72,7 @@ const (
 	URL_LOGIN = "/user/login"
 	URL_SAVE = "/data/save"
 	URL_QUERY = "/data/query"
+	URL_DELETE = "/data/delete"
 )
 
 const (
@@ -220,6 +222,55 @@ func (crv *CRVClient)Query(commonReq *CommonReq,token string)(*common.CommonRsp,
 	log.Println(string(resultJson))
 
 	log.Println("end CRVClient query success")
+	return &commonRsp,common.ResultSuccess
+}
+
+func (crv *CRVClient)Delete(commonReq *CommonReq,token string)(*common.CommonRsp,int){
+	log.Println("start CRVClient delete ...")
+	postJson,_:=json.Marshal(*commonReq)
+	postBody:=bytes.NewBuffer(postJson)
+	req,err:=http.NewRequest("POST",crv.Server+URL_DELETE,postBody)
+	if err != nil {
+		log.Println("CRVClient delete NewRequest error",err)
+		return nil,common.ResultSaveDataError
+	}
+
+	if len(token)==0 {
+		req.Header.Set("token", crv.Token)
+	} else {
+		req.Header.Set("token", token)
+	}
+	
+	req.Header.Set("Content-Type","application/json")
+	
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		log.Println("CRVClient delete Do request error",err)
+		return nil,common.ResultSaveDataError
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 { 
+		log.Println("CRVClient delete StatusCode error",resp)
+		return nil,common.ResultSaveDataError
+	}
+
+	decoder := json.NewDecoder(resp.Body)
+	commonRsp:=common.CommonRsp{}
+	err = decoder.Decode(&commonRsp)
+	if err != nil {
+		log.Println("CRVClient delete result decode failed [Err:%s]", err.Error())
+		return nil,common.ResultSaveDataError
+	}
+
+	if commonRsp.Error == true {
+		log.Printf("errorcode:%d,message:%s \n",commonRsp.ErrorCode,commonRsp.Message)
+	} else {
+		resultJson,_:=json.Marshal(&commonRsp.Result)
+		log.Println(string(resultJson))
+	}
+
+	log.Println("end CRVClient delete success")
 	return &commonRsp,common.ResultSuccess
 }
 

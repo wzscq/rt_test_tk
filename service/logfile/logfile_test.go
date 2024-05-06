@@ -71,3 +71,39 @@ func _TestUpdateLogFileToDB(t *testing.T) {
 		return
 	}
 }
+
+func _TestDeleteAllLogFiles(t *testing.T) {
+	crvClient := &crv.CRVClient{
+		Server: "http://localhost:8200",
+		Token:  "rt_test_tk_service",
+		AppID:  "",
+	}
+
+	DeleteAllLogFiles(crvClient,"")
+}
+
+func _TestDeleteLogFileByName(t *testing.T) {
+	crvClient := &crv.CRVClient{
+		Server: "http://localhost:8200",
+		Token:  "rt_test_tk_service",
+		AppID:  "",
+	}
+
+	DeleteLogFileByName("test",crvClient,"")
+}
+
+func _TestGetTestLogByTime(t *testing.T) {
+	crvClient := &crv.CRVClient{
+		Server: "http://localhost:8200",
+		Token:  "rt_test_tk_service",
+		AppID:  "",
+	}
+
+	lfm := &LogFileMonitor{
+		LogFilePath: "",
+		CRVClient: crvClient,
+	}
+
+	cnt:=lfm.GetTestLogByTime("2023-09-09 13:00:33")
+	fmt.Println(cnt)
+}

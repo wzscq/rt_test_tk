@@ -1,6 +1,8 @@
 module rt_test_service
 
-go 1.18
+go 1.21.1
+
+toolchain go1.22.1
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
@@ -21,6 +23,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
+	github.com/wzscq/taskschedule v0.0.0-20240129102018-70297e1823bf // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect

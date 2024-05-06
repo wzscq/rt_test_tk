@@ -62,6 +62,7 @@ func main() {
 
 	device.InitDeviceController(conf,crvClient,&mqttClient,router,tfp)
 	logfile.InitLogFileController(conf,crvClient,router)
+	logfile.InitLogFileMonitor(conf,crvClient)
 	
 	tc := testfile.TestFileController{
 		OutPath: conf.TestFile.Path,

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"fmt"
 	"rt_test_service/crv"
+	"time"
 )
 
 func _TestGetLogFileList(t *testing.T) {
@@ -92,16 +93,19 @@ func _TestDeleteLogFileByName(t *testing.T) {
 	DeleteLogFileByName("test",crvClient,"")
 }
 
-func _TestGetTestLogByTime(t *testing.T) {
+func TestGetTestLogByTime(t *testing.T) {
 	crvClient := &crv.CRVClient{
 		Server: "http://localhost:8200",
 		Token:  "rt_test_tk_service",
 		AppID:  "",
 	}
 
+	duration, _ := time.ParseDuration("1800s")
+
 	lfm := &LogFileMonitor{
 		LogFilePath: "",
 		CRVClient: crvClient,
+		ExpandTimeRange: duration,
 	}
 
 	cnt:=lfm.GetTestLogByTime("2023-09-09 13:00:33")

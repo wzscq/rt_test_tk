@@ -11,12 +11,15 @@ import (
 type LogFileMonitor struct {
 	CRVClient *crv.CRVClient
 	LogFilePath string
+	ExpandTimeRange time.Duration
 	DealedFiles map[string]bool
 }
 
 func InitLogFileMonitor(conf *common.Config,crvClient *crv.CRVClient)(lfm *LogFileMonitor) {
+	duration, _ := time.ParseDuration(conf.TestLogFile.ExpandTimeRange)
 	lfm = &LogFileMonitor{
 		LogFilePath: conf.TestLogFile.Path,
+		ExpandTimeRange: duration,
 		CRVClient: crvClient,
 	}
 
@@ -76,13 +79,23 @@ func (lfm *LogFileMonitor) UpdateLogFile(file LogFileItem) {
 	UpdateLogFileToDB(file, lfm.CRVClient, "")
 }
 
-func (lfm *LogFileMonitor) GetTestLogByTime(time string)(int) {
+func (lfm *LogFileMonitor) GetTestLogByTime(timeStr string)(int) {
+	//string to time
+	startTime, _:= time.Parse("2006-01-02 15:04:05", timeStr)
+	startTime=startTime.Add(time.Duration(lfm.ExpandTimeRange))
+
+	endTime,_:= time.Parse("2006-01-02 15:04:05", timeStr)
+	endTime=endTime.Add(-time.Duration(lfm.ExpandTimeRange))
+
+	log.Println("GetTestLogByTime:", timeStr,startTime.Format("2006-01-02 15:04:05"), endTime.Format("2006-01-02 15:04:05"))
+
+
 	filter := map[string]interface{}{
 		"start_time":map[string]interface{}{
-			"Op.lte": time,
+			"Op.lte": startTime.Format("2006-01-02 15:04:05"),
 		},
 		"update_time":map[string]interface{}{
-			"Op.gte": time,
+			"Op.gte": endTime.Format("2006-01-02 15:04:05"),
 		},
 	}
 

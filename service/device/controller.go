@@ -17,6 +17,7 @@ type DeviceController struct {
 	MapConf *common.MapConf
 	DeviceClient *DeviceClient
 	TestLock TestLock
+	CmdSenderRunner CmdSenderRunner
 }
 
 func (dc *DeviceController)getServerConf(c *gin.Context){
@@ -101,6 +102,14 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 		return
 	}
 
+	//判断是否已经有测试用例正在执行
+	if dc.TestLock.GetLock()==false {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultTestCaseIsRunning,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController runTestCase with error: test case is running")
+		return
+	}
+
 	//查询测试用例
 	tc:=GetTestCase((*rep.SelectedRowKeys)[0],header.Token,dc.CRVClient)
 	if tc==nil {
@@ -110,16 +119,21 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 		return
 	}
 
-	//判断是否已经有测试用例正在执行
-	if dc.TestLock.GetLock()==false {
-		rsp:=common.CreateResponse(common.CreateError(common.ResultTestCaseIsRunning,nil),nil)
-		c.IndentedJSON(http.StatusOK, rsp)
-		log.Println("DeviceController runTestCase with error: test case is running")
-		return
-	}
-
 	//转换为下发指令
 	cmd:=GetTestCommand(tc)
+
+	//获取测试方式
+	runType:=(*rep.List)[0]["run_type"].(string)
+	if runType == "2" {
+		cmdSender:=&DefaultCmdSender{
+			CMD:cmd,
+			MQTTClient:dc.MQTTClient,
+			Topic:dc.MqttConf.SendTestCaseTopic,
+		}
+		dc.CmdSenderRunner.SetCmdSender(cmdSender)
+	} else {
+		dc.CmdSenderRunner.SetCmdSender(nil)
+	}
 	
 	//生成下发数据结构
 	err:=SendTestCase(cmd,dc.MQTTClient,dc.MqttConf.SendTestCaseTopic)
@@ -130,7 +144,7 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 		log.Println("DeviceController runTestCase with error: send test case failed")
 		return
 	}
-
+	
 	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),nil)
 	c.IndentedJSON(http.StatusOK, rsp)
 }
@@ -208,9 +222,13 @@ func (dc *DeviceController)deviceReboot(c *gin.Context){
 
 func (dc *DeviceController)stopTestCase(c *gin.Context){
 	cmd:=&TestCommand{
-		Trigger:"start",
+		Trigger:"stop",
 		Topic:"CommandResult",
 	}
+
+	//设置持续运行标志
+	dc.TestLock.ReleaseLock()
+	dc.CmdSenderRunner.SetCmdSender(nil)
 
 	//生成下发数据结构
 	err:=SendTestCase(cmd,dc.MQTTClient,dc.MqttConf.SendTestCaseTopic)
@@ -237,7 +255,7 @@ func (dc *DeviceController) Bind(router *gin.Engine) {
 	router.POST("/device/reboot", dc.deviceReboot)
 }
 
-func InitDeviceController(conf *common.Config,crvClient *crv.CRVClient,mqttClient *mqtt.MQTTClient,router *gin.Engine,testLock TestLock){
+func InitDeviceController(conf *common.Config,crvClient *crv.CRVClient,mqttClient *mqtt.MQTTClient,router *gin.Engine,testLock TestLock,cmdSenderRunner CmdSenderRunner){
 	dc:=DeviceController{
 		CRVClient: crvClient,
 		MqttConf: &conf.Mqtt,
@@ -248,6 +266,7 @@ func InitDeviceController(conf *common.Config,crvClient *crv.CRVClient,mqttClien
 			ServerUrl: conf.DeviceClient.ServerUrl,
 		},
 		TestLock: testLock,
+		CmdSenderRunner:cmdSenderRunner,
 	}
 
 	dc.Bind(router)

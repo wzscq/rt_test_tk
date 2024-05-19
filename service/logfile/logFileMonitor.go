@@ -49,8 +49,10 @@ func (lfm *LogFileMonitor) Run() {
 	//循环处理每个文件
 	for _, file := range files {
 		//更新文件信息到数据库
-		lfm.UpdateLogFile(file)
-		dealedFiles[file.Name] = true
+		isDeal:=lfm.UpdateLogFile(file)
+		if isDeal == true {
+			dealedFiles[file.Name] = true
+		}
 	}
 
 	//删除过期的文件
@@ -63,20 +65,21 @@ func (lfm *LogFileMonitor) Run() {
 	lfm.DealedFiles = dealedFiles
 }
 
-func (lfm *LogFileMonitor) UpdateLogFile(file LogFileItem) {
+func (lfm *LogFileMonitor) UpdateLogFile(file LogFileItem)(bool) {
 	//判断文件是否已经检查过
 	if lfm.DealedFiles[file.Name] {
-		return
+		return true
 	}
 
 	//查询数据库中是否存在对应时间的测试日志
 	count:=lfm.GetTestLogByTime(file.CreationTime)
 	if count == 0 {
-		return
+		return false
 	}
 
 	//添加文件信息到数据库
 	UpdateLogFileToDB(file, lfm.CRVClient, "")
+	return true
 }
 
 func (lfm *LogFileMonitor) GetTestLogByTime(timeStr string)(int) {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"rt_test_service/crv"
+	"rt_test_service/device"
 	"sync"
 	"time"
 	"rt_test_service/common"
@@ -29,6 +30,7 @@ type TestFilePool struct {
 	CRVClient       *crv.CRVClient
 	IsRunning       bool 
 	StartTime       time.Time
+	CmdSender       device.CmdSender
 }
 
 type TestData struct {
@@ -53,7 +55,9 @@ func InitTestFilePool(outPath string, idleBeforeClose string, crvClient *crv.CRV
 	}
 
 	//启动扫描线程
-	go tfp.Scan()
+	if crvClient != nil {
+		go tfp.Scan()
+	}
 
 	return tfp
 }
@@ -86,10 +90,19 @@ func (tfp *TestFilePool) Scan() {
 		tfp.Mutex.Lock()
 		for _, tf := range tfp.Pool {
 			if tf.LineCount == tf.lastLineCount {
+				//再一定时间内没有收到新的数据，认为测试已经停止，需要关闭测试记录文件
 				tf.Close("")
 				log.Println("TestFilePool.Scan close test file with deviceID:" + tf.DeviceID)
 				delete(tfp.Pool, tf.DeviceID)
 				tfp.createCacheRecord(tf)
+				//这里检查一下测试如果是循环测试，则继续下发下一个测试指令
+				if(tfp.CmdSender!=nil){
+					log.Println("TestFilePool.Scan send next cmd")
+					tfp.CmdSender.SendCmd()
+				} else {
+					//释放锁,认为测试已经结束
+					tfp.ReleaseLock()
+				}
 			} else {
 				tf.lastLineCount = tf.LineCount
 			}
@@ -164,6 +177,10 @@ func (tfp *TestFilePool) ReleaseLock() {
 	tfp.IsRunning = false
 }
 
+func (tfp *TestFilePool) SetCmdSender(cmdSender device.CmdSender){
+	tfp.CmdSender=cmdSender
+}
+
 func (tfp *TestFilePool) HandleReportResult(report string) {
 	//收到消息时更新时间，防止任务意外中断
 	tfp.StartTime=time.Now()
@@ -193,8 +210,15 @@ func (tfp *TestFilePool) HandleReportResult(report string) {
 				tfp.SaveResult(reportData.ExampleCode, resultMap)
 			}
 		}
-		//释放锁
-		tfp.ReleaseLock()
+
+		//这里检查一下测试如果是循环测试，则继续下发下一个测试指令
+		if(tfp.CmdSender!=nil){
+			log.Println("TestFilePool.Scan send next cmd")
+			tfp.CmdSender.SendCmd()
+		} else {
+			//释放锁,认为测试已经结束
+			tfp.ReleaseLock()
+		}
 	}	
 }
 

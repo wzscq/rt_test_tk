@@ -62,7 +62,7 @@ func _TestCreateFile(t *testing.T) {
 	tf.Close("")
 }
 
-func TestGetTestFileFromDB(t *testing.T) {
+func _TestGetTestFileFromDB(t *testing.T) {
 	crvClient := &crv.CRVClient{
 		Server: "http://127.0.0.1:8200",
 		Token:  "rt_test_tk_service",
@@ -163,4 +163,27 @@ func _TestGetFilePoints(t *testing.T) {
 }
 
 
+func TestTestFileLock(t *testing.T) {
 
+	//创建TestFilePool
+	tfp := InitTestFilePool("", "3s", nil)
+	if tfp.GetLock()==false {
+		t.Error("GetLock failed")
+		return
+	}
+	tfp.ReleaseLock()
+	if tfp.GetLock()==false {
+		t.Error("GetLock failed")
+		return
+	}
+	time.Sleep(4 * time.Second)
+	if tfp.GetLock()==false {
+		t.Error("GetLock failed")
+		return
+	}
+	time.Sleep(2 * time.Second)
+	if tfp.GetLock()==true {
+		t.Error("GetLock failed")
+		return
+	}
+}

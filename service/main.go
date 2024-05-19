@@ -60,7 +60,7 @@ func main() {
 	}
 	mqttClient.Init()
 
-	device.InitDeviceController(conf,crvClient,&mqttClient,router,tfp)
+	device.InitDeviceController(conf,crvClient,&mqttClient,router,tfp,tfp)
 	logfile.InitLogFileController(conf,crvClient,router)
 	logfile.InitLogFileMonitor(conf,crvClient)
 	

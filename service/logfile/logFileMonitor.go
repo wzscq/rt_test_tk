@@ -13,6 +13,7 @@ type LogFileMonitor struct {
 	LogFilePath string
 	ExpandTimeRange time.Duration
 	DealedFiles map[string]bool
+	LogFileFromDecoderUrl string
 }
 
 func InitLogFileMonitor(conf *common.Config,crvClient *crv.CRVClient)(lfm *LogFileMonitor) {
@@ -21,6 +22,7 @@ func InitLogFileMonitor(conf *common.Config,crvClient *crv.CRVClient)(lfm *LogFi
 		LogFilePath: conf.TestLogFile.Path,
 		ExpandTimeRange: duration,
 		CRVClient: crvClient,
+		LogFileFromDecoderUrl: conf.TestLogFile.LogFileFromDecoderUrl,
 	}
 
 	//清空数据库
@@ -39,7 +41,7 @@ func InitLogFileMonitor(conf *common.Config,crvClient *crv.CRVClient)(lfm *LogFi
 
 func (lfm *LogFileMonitor) Run() {
 	//读取文件列表
-	files, err := GetLogFileList(lfm.LogFilePath)
+	files, err := GetLogFileListFromDecode(lfm.LogFileFromDecoderUrl)//GetLogFileList(lfm.LogFilePath)
 	if err != nil {
 		log.Println(err)
 		return
@@ -72,7 +74,7 @@ func (lfm *LogFileMonitor) UpdateLogFile(file LogFileItem)(bool) {
 	}
 
 	//查询数据库中是否存在对应时间的测试日志
-	count:=lfm.GetTestLogByTime(file.CreationTime)
+	count:=GetTestLogByTime(file.CreationTime,lfm.CRVClient,"",lfm.ExpandTimeRange)
 	if count == 0 {
 		return false
 	}
@@ -82,52 +84,6 @@ func (lfm *LogFileMonitor) UpdateLogFile(file LogFileItem)(bool) {
 	return true
 }
 
-func (lfm *LogFileMonitor) GetTestLogByTime(timeStr string)(int) {
-	//string to time
-	startTime, _:= time.Parse("2006-01-02 15:04:05", timeStr)
-	startTime=startTime.Add(time.Duration(lfm.ExpandTimeRange))
-
-	endTime,_:= time.Parse("2006-01-02 15:04:05", timeStr)
-	endTime=endTime.Add(-time.Duration(lfm.ExpandTimeRange))
-
-	log.Println("GetTestLogByTime:", timeStr,startTime.Format("2006-01-02 15:04:05"), endTime.Format("2006-01-02 15:04:05"))
-
-
-	filter := map[string]interface{}{
-		"start_time":map[string]interface{}{
-			"Op.lte": startTime.Format("2006-01-02 15:04:05"),
-		},
-		"update_time":map[string]interface{}{
-			"Op.gte": endTime.Format("2006-01-02 15:04:05"),
-		},
-	}
-
-	commonRep := crv.CommonReq{
-		ModelID: "rt_cache_test_file",
-		Fields:  &[]map[string]interface{}{
-			{"field": "id"},
-		},
-		Filter:  &filter,
-	}
-
-	rsp, commonErr := lfm.CRVClient.Query(&commonRep, "")
-	if commonErr != common.ResultSuccess {
-		return 0
-	}
-
-	if rsp.Error == true {
-		log.Println("GetCommitedTestCase error:", rsp.ErrorCode, rsp.Message)
-		return 0
-	}
-
-	resLst, ok := rsp.Result.(map[string]interface{})["list"].([]interface{})
-	if !ok {
-		log.Println("GetTestLogByTime error: no list in rsp.")
-		return 0
-	}
-
-	return len(resLst)
-}
 
 
 

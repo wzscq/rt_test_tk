@@ -8,6 +8,8 @@ import (
 	"errors"
 	"rt_test_service/common"
 	"time"
+	"net/http"
+	"encoding/json"
 )
 
 const MODELID_LOG_FILE = "rt_log_file"
@@ -19,6 +21,12 @@ type LogFileItem struct {
 	Status string `json:"status"`
 	DecodeID string `json:"decodeID"`
 	DecodedFile string `json:"decodedFile"`
+}
+
+type DecoderFileItem struct {
+	FileName string `json:"name"`
+	CreationTime string `json:"creation_time"`
+	ModificationTime string `json:"modification_time"`
 }
 
 // GetFileList returns a list of log files in the specified path.
@@ -46,11 +54,64 @@ func GetLogFileList(path string) ([]LogFileItem,error){
 
 }
 
-func UpdateLogFilesToDB(files []LogFileItem,crvClient *crv.CRVClient,token string)(error){
+func GetLogFileListFromDecode(url string)([]LogFileItem,error){
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Println("GetLogFileListFromDecode Get error", err)
+		return nil, err
+	}
+
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		log.Println("GetLogFileListFromDecode Get Do request error", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		log.Println("GetLogFileListFromDecode Get StatusCode error", resp)
+		return nil, errors.New("api returns a worng status code")
+	}
+
+	decoder := json.NewDecoder(resp.Body)
+	fileList := []DecoderFileItem{}
+	err = decoder.Decode(&fileList)
+	if err != nil {
+		log.Println("GetLogFileListFromDecode Get result decode failed error", err.Error())
+		return nil, err
+	}
+
+	var files []LogFileItem
+	//转换格式
+	for _, file := range fileList {
+		fileinfo := LogFileItem {
+			Name:         file.FileName,
+			CreationTime: GetCreateTime(file.FileName),
+		}
+
+		files = append(files, fileinfo)
+	}
+	
+
+	log.Println("end DeviceClient Get success")
+	return files, nil
+}
+
+func GetCreateTime(fileName string)(string){
+	//文件名称格式为：20240519_073626_0014.qmdl2
+	//转换为：2024-05-19 07:36:26
+	return fileName[0:4]+"-"+fileName[4:6]+"-"+fileName[6:8]+" "+fileName[9:11]+":"+fileName[11:13]+":"+fileName[13:15]
+}
+
+func UpdateLogFilesToDB(files []LogFileItem,crvClient *crv.CRVClient,token string,expandTimeRange time.Duration)(error){
 	for _, file := range files {
-		err:=UpdateLogFileToDB(file, crvClient,token)
-		if err!=nil {
-			return err
+		//查询数据库中是否存在对应时间的测试日志
+		count:=GetTestLogByTime(file.CreationTime,crvClient,token,expandTimeRange)
+		if count > 0 {
+			err:=UpdateLogFileToDB(file, crvClient,token)
+			if err!=nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -191,4 +252,51 @@ func DeleteLogFileByName(name string,crvClient *crv.CRVClient,token string) {
 	}
 
 	crvClient.Delete(&commonRep, token)
+}
+
+func GetTestLogByTime(timeStr string,crvClient *crv.CRVClient,token string,expandTimeRange time.Duration)(int) {
+	//string to time
+	startTime, _:= time.Parse("2006-01-02 15:04:05", timeStr)
+	startTime=startTime.Add(time.Duration(expandTimeRange))
+
+	endTime,_:= time.Parse("2006-01-02 15:04:05", timeStr)
+	endTime=endTime.Add(-time.Duration(expandTimeRange))
+
+	log.Println("GetTestLogByTime:", timeStr,startTime.Format("2006-01-02 15:04:05"), endTime.Format("2006-01-02 15:04:05"))
+
+
+	filter := map[string]interface{}{
+		"start_time":map[string]interface{}{
+			"Op.lte": startTime.Format("2006-01-02 15:04:05"),
+		},
+		"update_time":map[string]interface{}{
+			"Op.gte": endTime.Format("2006-01-02 15:04:05"),
+		},
+	}
+
+	commonRep := crv.CommonReq{
+		ModelID: "rt_cache_test_file",
+		Fields:  &[]map[string]interface{}{
+			{"field": "id"},
+		},
+		Filter:  &filter,
+	}
+
+	rsp, commonErr := crvClient.Query(&commonRep, token)
+	if commonErr != common.ResultSuccess {
+		return 0
+	}
+
+	if rsp.Error == true {
+		log.Println("GetCommitedTestCase error:", rsp.ErrorCode, rsp.Message)
+		return 0
+	}
+
+	resLst, ok := rsp.Result.(map[string]interface{})["list"].([]interface{})
+	if !ok {
+		log.Println("GetTestLogByTime error: no list in rsp.")
+		return 0
+	}
+
+	return len(resLst)
 }

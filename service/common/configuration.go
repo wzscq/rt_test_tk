@@ -69,6 +69,7 @@ type TestLogFileConf struct {
 	GetLogFileUrl string `json:"getLogFileUrl"`
 	ScanDuration string `json:"scanDuration"`
 	ExpandTimeRange string `json:"expandTimeRange"`
+	LogFileFromDecoderUrl string `json:"logFileFromDecoderUrl"`
 }
 
 type FtpConf struct {

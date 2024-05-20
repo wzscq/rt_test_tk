@@ -46,4 +46,9 @@ docker run -d --name rtservice -p8300:80 -v /root/rtservice/localcache:/services
     a、修改模型配置：rt_project_test_case
     b、修改后台逻辑
 
+20240520
+1、修改logfile列表获取方式，改为通过解码器接口获取文件列表
+   a、修改后台逻辑，增加新的接口从解码器获取文件列表
+   b、修拍配置文件，增加到解码器文件列表获取url配置
+
    

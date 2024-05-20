@@ -9,13 +9,16 @@ import (
 	"fmt"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 type LogFileController struct {
 	CRVClient *crv.CRVClient
 	LogFilePath string
 	DecodedPath string
+	LogFileFromDecoderUrl string
 	DC *DecoderClient
+	ExpandTimeRange time.Duration
 }
 
 func (lfc *LogFileController) update(c *gin.Context) {
@@ -39,7 +42,50 @@ func (lfc *LogFileController) update(c *gin.Context) {
 		return
 	}
 
-	err = UpdateLogFilesToDB(files, lfc.CRVClient, header.Token)
+	//清空数据库
+	DeleteAllLogFiles(lfc.CRVClient,header.Token)
+
+	err = UpdateLogFilesToDB(files, lfc.CRVClient, header.Token, lfc.ExpandTimeRange)
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultUpdateLogFileError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("LogFileController update with error")
+		return
+	}
+
+	rsp:=common.CreateResponse(nil,nil)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("LogFileController update success")
+}
+
+func (lfc *LogFileController) updateFromDecoder(c *gin.Context) {
+	var header crv.CommonHeader
+	if err := c.ShouldBindHeader(&header); err != nil {
+		log.Println(err)
+		rsp:=common.CreateResponse(common.CreateError(common.ResultWrongRequest,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("LogFileController update wrong request")
+		return
+	}	
+
+	files, err := GetLogFileListFromDecode(lfc.LogFileFromDecoderUrl)
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultUpdateLogFileError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("LogFileController update with error")
+		return
+	}
+
+	//清空数据库
+	DeleteAllLogFiles(lfc.CRVClient,header.Token)
+
+	err = UpdateLogFilesToDB(files, lfc.CRVClient, header.Token, lfc.ExpandTimeRange)
 	if err != nil {
 		params:=map[string]interface{}{
 			"error":err.Error(),
@@ -184,17 +230,21 @@ func (lfc *LogFileController) Bind(router *gin.Engine) {
 	router.POST("/logfile/update", lfc.update)
 	router.POST("/logfile/decode", lfc.decode)
 	router.POST("/logfile/download", lfc.download)
+	router.POST("/logfile/updateFromDecoder", lfc.updateFromDecoder)
 }
 
 func InitLogFileController(conf *common.Config,crvClient *crv.CRVClient,router *gin.Engine){
+	duration, _ := time.ParseDuration(conf.TestLogFile.ExpandTimeRange)
 	dc:=LogFileController{
 		CRVClient: crvClient,
 		LogFilePath: conf.TestLogFile.Path,
 		DecodedPath: conf.TestLogFile.DecodedPath,
+		ExpandTimeRange: duration,
 		DC: &DecoderClient{
 			URL: conf.TestLogFile.DecoderUrl,
 			GetLogFileUrl: conf.TestLogFile.GetLogFileUrl,
 		},
+		LogFileFromDecoderUrl: conf.TestLogFile.LogFileFromDecoderUrl,
 	}
 
 	dc.Bind(router)

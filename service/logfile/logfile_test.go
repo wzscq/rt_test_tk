@@ -93,7 +93,7 @@ func _TestDeleteLogFileByName(t *testing.T) {
 	DeleteLogFileByName("test",crvClient,"")
 }
 
-func TestGetTestLogByTime(t *testing.T) {
+func _TestGetTestLogByTime(t *testing.T) {
 	crvClient := &crv.CRVClient{
 		Server: "http://localhost:8200",
 		Token:  "rt_test_tk_service",
@@ -110,4 +110,13 @@ func TestGetTestLogByTime(t *testing.T) {
 
 	cnt:=lfm.GetTestLogByTime("2023-09-09 13:00:33")
 	fmt.Println(cnt)
+}
+
+func TestGetCreateTime(t *testing.T) {
+	tm:=GetCreateTime("20240519_073626_0014.qmdl2")
+	if tm != "2024-05-19 07:36:26" {
+		t.Error("GetCreateTime error")
+	}
+	
+	fmt.Println(tm)
 }

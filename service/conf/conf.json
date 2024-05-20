@@ -36,9 +36,10 @@
     },
     "testLogFile":{
         "path":"./logfile/",
+        "logFileFromDecoderUrl":"http://192.168.3.111/files",
         "decodedPath":"./decoder/",
         "decoderUrl":"http://182.42.81.6:5000/",
-        "getLogFileUrl":"http://192.168.4.111/qlogs/qlogs/09b59cee155449dca0de423adc4bc1a0/qlog_files/",
+        "getLogFileUrl":"",
         "scanDuration":"10s",
         "expandTimeRange":"1800s"
     },

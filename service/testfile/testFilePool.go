@@ -31,6 +31,7 @@ type TestFilePool struct {
 	IsRunning       bool 
 	StartTime       time.Time
 	CmdSender       device.CmdSender
+	LastGPSRec	    *GPSRec
 }
 
 type TestData struct {
@@ -90,21 +91,26 @@ func (tfp *TestFilePool) Scan() {
 		tfp.Mutex.Lock()
 		for _, tf := range tfp.Pool {
 			if tf.LineCount == tf.lastLineCount {
-				//再一定时间内没有收到新的数据，认为测试已经停止，需要关闭测试记录文件
-				tf.Close("")
-				log.Println("TestFilePool.Scan close test file with deviceID:" + tf.DeviceID)
-				delete(tfp.Pool, tf.DeviceID)
-				tfp.createCacheRecord(tf)
-				//这里检查一下测试如果是循环测试，则继续下发下一个测试指令
-				if(tfp.CmdSender!=nil){
-					log.Println("TestFilePool.Scan send next cmd")
-					tfp.CmdSender.SendCmd()
+				if tf.sameLineCount>0 {
+					//再一定时间内没有收到新的数据，认为测试已经停止，需要关闭测试记录文件
+					tf.Close()
+					log.Println("TestFilePool.Scan close test file with deviceID:" + tf.DeviceID)
+					delete(tfp.Pool, tf.DeviceID)
+					tfp.createCacheRecord(tf)
+					//这里检查一下测试如果是循环测试，则继续下发下一个测试指令
+					if(tfp.CmdSender!=nil){
+						log.Println("TestFilePool.Scan send next cmd")
+						tfp.CmdSender.SendCmd()
+					} else {
+						//释放锁,认为测试已经结束
+						tfp.ReleaseLock()
+					}
 				} else {
-					//释放锁,认为测试已经结束
-					tfp.ReleaseLock()
+					tf.sameLineCount++
 				}
 			} else {
 				tf.lastLineCount = tf.LineCount
+				tf.sameLineCount=0
 			}
 		}
 		tfp.Mutex.Unlock()
@@ -118,7 +124,7 @@ func (tfp *TestFilePool) WriteDeviceTestLine(deviceID, line string) {
 
 	tf := tfp.Pool[deviceID]
 	if tf == nil {
-		tf = tfp.CreateTestFile(deviceID, line)
+		tf = tfp.CreateTestFile(deviceID)
 		tfp.Pool[deviceID] = tf
 	}
 
@@ -134,12 +140,25 @@ func GetLineTimeStamp() string {
 	return time.Now().Format("20060102150405")
 }
 
-func (tfp *TestFilePool) CreateTestFile(deviceID, line string) *TestFile {
+func (tfp *TestFilePool) CreateTestFile(deviceID string) *TestFile {
 	timeStamp := GetLineTimeStamp()
 	return GetTestFile(tfp.OutPath, deviceID, timeStamp)
 }
 
-func (tfp *TestFilePool) SaveResult(deviceID string, result map[string]interface{}) {
+func (tfp *TestFilePool) SaveResult(deviceID string) {
+	tfp.Mutex.Lock()
+	defer tfp.Mutex.Unlock()
+
+	tf := tfp.Pool[deviceID]
+	if tf != nil {
+		tf.Close()
+		log.Println("SaveResult close test file with deviceID:" + tf.DeviceID)
+		delete(tfp.Pool, tf.DeviceID)
+		tfp.createCacheRecord(tf)
+	}
+}
+
+func (tfp *TestFilePool) AddResult(deviceID string, result map[string]interface{}) {
 	//这里需要枷锁做并发控制
 	resultByte, err := json.MarshalIndent(result, "", "    ")
 	var resultString string
@@ -154,11 +173,51 @@ func (tfp *TestFilePool) SaveResult(deviceID string, result map[string]interface
 
 	tf := tfp.Pool[deviceID]
 	if tf != nil {
-		tf.Close(resultString)
-		log.Println("SaveResult close test file with deviceID:" + tf.DeviceID)
-		delete(tfp.Pool, tf.DeviceID)
-		tfp.createCacheRecord(tf)
+		tf.AddResult(resultString)
+		log.Println("AddResult to test file with deviceID:" + tf.DeviceID)
+		//delete(tfp.Pool, tf.DeviceID)
+		//tfp.createCacheRecord(tf)
 	}
+}
+
+func (tfp *TestFilePool) AddProcessResult(deviceID string,result map[string]interface{}) {
+	//测试结果中补充GPS信息
+	if tfp.LastGPSRec!=nil {
+		result["gps"]=tfp.LastGPSRec
+	}
+	
+	//这里需要枷锁做并发控制
+	resultByte, err := json.MarshalIndent(result, "", "    ")
+	var resultString string
+	if err != nil {
+		resultString=""
+	} else {
+		resultString = string(resultByte)
+	}
+
+	tfp.Mutex.Lock()
+	defer tfp.Mutex.Unlock()
+
+	tf := tfp.Pool[deviceID]
+	if tf == nil {
+		tf = tfp.CreateTestFile(deviceID)
+		tfp.Pool[deviceID] = tf
+	}
+
+	if tf == nil {
+		return
+	}
+
+	//获取第一个tf
+	//for _, tf := range tfp.Pool {
+	//	if tf != nil {
+			tf.AddResult(resultString)
+			//log.Println("AddResult to test file with deviceID:" + tf.DeviceID)
+			//delete(tfp.Pool, tf.DeviceID)
+			//tfp.createCacheRecord(tf)
+	//	}
+	//	break
+	//}
 }
 
 func (tfp *TestFilePool) GetLock()(bool) {
@@ -181,7 +240,69 @@ func (tfp *TestFilePool) SetCmdSender(cmdSender device.CmdSender){
 	tfp.CmdSender=cmdSender
 }
 
+func (tfp *TestFilePool) SaveGPS(gpsJsonStr string){
+	SaveGPS(gpsJsonStr,tfp.CRVClient)
+}
+
 func (tfp *TestFilePool) HandleReportResult(report string) {
+	//收到消息时更新时间，防止任务意外中断
+	tfp.StartTime=time.Now()
+
+	//decode to reportData
+	reportData := ReportData{}
+	err := json.Unmarshal([]byte(report), &reportData)
+	if err != nil {
+		log.Println("HandleReportResult Unmarshal failed:", err)
+		return
+	}
+
+	if reportData.TestData.GPS!=nil {
+		line, _ := json.Marshal(reportData.TestData.GPS)
+		tfp.WriteDeviceTestLine(reportData.ExampleCode, string(line))
+		tfp.LastGPSRec=GetGPSRec(string(line))
+		tfp.SaveGPS(string(line))
+	}
+
+	//如果msg_type是finaly，则结束测试，保存文件
+	if reportData.MsgType == "finally" {
+		resultMap,ok:=reportData.TestData.Result.(map[string]interface{})
+		if ok {
+			tfp.AddResult(reportData.ExampleCode, resultMap)
+		} else {
+			resultString,ok:=reportData.TestData.Result.(string)
+			if ok {
+				resultMap:=map[string]interface{}{"result":resultString}
+				tfp.AddResult(reportData.ExampleCode, resultMap)
+			}
+		}
+
+		//这里检查一下测试如果是循环测试，则继续下发下一个测试指令
+		if(tfp.CmdSender!=nil){
+			log.Println("TestFilePool.Scan send next cmd")
+			tfp.CmdSender.SendCmd()
+		} else {
+			//释放锁,认为测试已经结束
+			tfp.SaveResult(reportData.ExampleCode)
+			tfp.ReleaseLock()
+		}
+	}
+}
+
+func (tfp *TestFilePool) HandleResult(report string) {
+	resultMap:=map[string]interface{}{}
+	err:=json.Unmarshal([]byte(report), &resultMap)
+	if err!=nil {
+		log.Println("HandleResult Unmarshal failed:", err)
+		return
+	}
+
+	deviceID,_:=resultMap["exampleCode"].(string)
+	
+	tfp.AddProcessResult(deviceID,resultMap)
+}
+
+
+/*func (tfp *TestFilePool) HandleReportResult(report string) {
 	//收到消息时更新时间，防止任务意外中断
 	tfp.StartTime=time.Now()
 
@@ -220,7 +341,7 @@ func (tfp *TestFilePool) HandleReportResult(report string) {
 			tfp.ReleaseLock()
 		}
 	}	
-}
+}*/
 
 func GetTestFileFromDB(id,token string,crvClient *crv.CRVClient)(*TestFile,int) {
 	commonRep := crv.CommonReq{

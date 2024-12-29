@@ -39,7 +39,6 @@ docker run -d --name rtservice -p8300:80 -v /root/rtservice/localcache:/services
 
 20240512
 1、补充测试停止功能，修改后台服务逻辑。
-2、补充attach、detatch测试
 
 20240519
 1、增加一个弹出框选择测试参数，目前仅添加单次测试何循环测试参数
@@ -51,4 +50,16 @@ docker run -d --name rtservice -p8300:80 -v /root/rtservice/localcache:/services
    a、修改后台逻辑，增加新的接口从解码器获取文件列表
    b、修拍配置文件，增加到解码器文件列表获取url配置
 
+20240524
+1、大小列去掉，修改模型配置rt_log_file
+2、
+
+20241114
+1、增加了RAT接口
+    a、需要更新后台服务
+    b、需要更新dashboard页面
+    c、需要更新external_api的配置
+2、补充后台测试过程结果记录
+    a、需要更新后台服务
+    
    

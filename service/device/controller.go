@@ -18,6 +18,11 @@ type DeviceController struct {
 	DeviceClient *DeviceClient
 	TestLock TestLock
 	CmdSenderRunner CmdSenderRunner
+	LastCmd *TestCommand
+}
+
+type SetBandReq struct {
+	Band string `json:"band"`
 }
 
 func (dc *DeviceController)getServerConf(c *gin.Context){
@@ -122,6 +127,8 @@ func (dc *DeviceController)runTestCase(c *gin.Context){
 	//转换为下发指令
 	cmd:=GetTestCommand(tc)
 
+	dc.LastCmd = cmd
+
 	//获取测试方式
 	runType:=(*rep.List)[0]["run_type"].(string)
 	if runType == "2" {
@@ -186,6 +193,58 @@ func (dc *DeviceController)dialQuery(c *gin.Context){
 	log.Println("DeviceController dialQuery success")
 }
 
+func (dc *DeviceController)deviceAttach(c *gin.Context){
+	res,err:=dc.DeviceClient.Attach()
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController deviceAttach with error")
+		return
+	}
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController deviceAttach success")
+}
+
+
+func (dc *DeviceController)deviceAttachQuery(c *gin.Context){
+	res,err:=dc.DeviceClient.AttachQuery()
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController deviceAttachQuery with error")
+		return
+	}
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController deviceAttachQuery success")
+}
+
+func (dc *DeviceController)deviceDetach(c *gin.Context){
+	res,err:=dc.DeviceClient.Detach()
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController deviceDetach with error")
+		return
+	}
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController deviceDetach success")
+}
+
 func (dc *DeviceController)dialTrigger(c *gin.Context){
 	res,err:=dc.DeviceClient.DialTrigger()
 	if err != nil {
@@ -221,17 +280,21 @@ func (dc *DeviceController)deviceReboot(c *gin.Context){
 }
 
 func (dc *DeviceController)stopTestCase(c *gin.Context){
-	cmd:=&TestCommand{
-		Trigger:"stop",
-		Topic:"CommandResult",
+	if dc.LastCmd == nil {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultNoLastTestCaseError,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController stopTestCase with error: no test case")
+		return
 	}
 
 	//设置持续运行标志
 	dc.TestLock.ReleaseLock()
 	dc.CmdSenderRunner.SetCmdSender(nil)
 
+	dc.LastCmd.Trigger = "stop"
+
 	//生成下发数据结构
-	err:=SendTestCase(cmd,dc.MQTTClient,dc.MqttConf.SendTestCaseTopic)
+	err:=SendTestCase(dc.LastCmd,dc.MQTTClient,dc.MqttConf.SendTestCaseTopic)
 	if err != nil {
 		rsp:=common.CreateResponse(common.CreateError(common.ResultSendTestCaseError,nil),nil)
 		c.IndentedJSON(http.StatusOK, rsp)
@@ -241,6 +304,55 @@ func (dc *DeviceController)stopTestCase(c *gin.Context){
 
 	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),nil)
 	c.IndentedJSON(http.StatusOK, rsp)
+}
+
+func (dc *DeviceController)getRAT(c *gin.Context){
+	log.Println("DeviceController getRAT")
+	res,err:=dc.DeviceClient.GetRAT()
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController getRAT with error")
+		return
+	}
+
+	log.Println(res)
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController getRAT success")
+}
+
+func (dc *DeviceController)setRAT(c *gin.Context){
+	var rep SetBandReq
+	if err := c.ShouldBind(&rep); err != nil {
+		rsp:=common.CreateResponse(common.CreateError(common.ResultWrongRequest,nil),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController setRAT with error")
+		log.Println(err)
+		return
+  	}
+
+	log.Println("DeviceController setRAT")
+	res,err:=dc.DeviceClient.SetRAT(rep.Band)
+	if err != nil {
+		params:=map[string]interface{}{
+			"error":err.Error(),
+		}
+		rsp:=common.CreateResponse(common.CreateError(common.ResultInvokeDeviceAPIError,params),nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		log.Println("DeviceController setRAT with error")
+		return
+	}
+
+	log.Println(res)
+
+	rsp:=common.CreateResponse(common.CreateError(common.ResultSuccess,nil),res)
+	c.IndentedJSON(http.StatusOK, rsp)
+	log.Println("DeviceController setBand success")
 }
 
 func (dc *DeviceController) Bind(router *gin.Engine) {
@@ -253,6 +365,11 @@ func (dc *DeviceController) Bind(router *gin.Engine) {
 	router.POST("/device/dialQuery", dc.dialQuery)
 	router.POST("/device/dialTrigger", dc.dialTrigger)
 	router.POST("/device/reboot", dc.deviceReboot)
+	router.POST("/device/attach", dc.deviceAttach)
+	router.POST("/device/attach_query", dc.deviceAttachQuery)
+	router.POST("/device/detach", dc.deviceDetach)
+	router.POST("/device/getRAT", dc.getRAT)
+	router.POST("/device/setRAT", dc.setRAT)
 }
 
 func InitDeviceController(conf *common.Config,crvClient *crv.CRVClient,mqttClient *mqtt.MQTTClient,router *gin.Engine,testLock TestLock,cmdSenderRunner CmdSenderRunner){

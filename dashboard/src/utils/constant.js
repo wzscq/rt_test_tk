@@ -45,6 +45,10 @@ export const DATA_TYPE={
     SERVER_CONF:'serverConf',//"DATA_TYPE_SERVER_CONF",   //服务器配置
     IMSI:'imsi',//"DATA_TYPE_IMSI",   //IMSI数据
     DIAL:'dial',//"DATA_TYPE_DIAL",   //拨号数据
+    ATTACH:'attach',//"DATA_TYPE_ATTACH",   //附着数据
+    ATTACH_QUERY:'attach_query',//"DATA_TYPE_ATTACH_QUERY",   //附着查询数据
+    DETACH:'detach',//"DATA_TYPE_DETACH",   //去附着数据
+    RAT:'rat',//"DATA_TYPE_RAT",   //RAT数据
 }
 
 export const FORM_TYPE={

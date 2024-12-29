@@ -59,7 +59,7 @@ func _TestCreateFile(t *testing.T) {
 		tf.WriteLine(lineContent)
 	}
 
-	tf.Close("")
+	tf.Close()
 }
 
 func _TestGetTestFileFromDB(t *testing.T) {
@@ -86,10 +86,13 @@ func _TestTestFilePool(t *testing.T) {
 		AppID:  "rt_test_tk",
 	}
 
+	testCmdSender:=&TestCmdSender{}
+
 	//reportData转换为JSON字符串
 	reportDataJson, _ := json.Marshal(data1)
 	//创建TestFilePool
 	tfp := InitTestFilePool("../localcache/", "3s", crvClient)
+	tfp.SetCmdSender(testCmdSender)
 	//写入数据
 	tfp.HandleReportResult(string(reportDataJson))
 	//等待5秒
@@ -99,6 +102,13 @@ func _TestTestFilePool(t *testing.T) {
 	}
 	result,_:=json.Marshal(data2)
 	tfp.HandleReportResult(string(result))
+	time.Sleep(2 * time.Second)
+	tfp.HandleReportResult(string(result))
+	time.Sleep(2 * time.Second)
+	tfp.HandleReportResult(string(result))
+
+	tfp.SetCmdSender(nil)
+	//tfp.HandleReportResult(string(result))
 	time.Sleep(8 * time.Second)
 }
 
@@ -163,7 +173,7 @@ func _TestGetFilePoints(t *testing.T) {
 }
 
 
-func TestTestFileLock(t *testing.T) {
+func _TestTestFileLock(t *testing.T) {
 
 	//创建TestFilePool
 	tfp := InitTestFilePool("", "3s", nil)

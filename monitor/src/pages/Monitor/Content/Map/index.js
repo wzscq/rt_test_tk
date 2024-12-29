@@ -116,15 +116,31 @@ export default function MapWrapper(){
             } else {
               console.log("subscribe topics error :"+err.toString());
             }
-          });          
+          });    
+
+          g_MQTTClient.subscribe("attach_result", (err) => {
+            if(!err){
+              console.log("subscribe success. topic:attach_result");
+            } else {
+              console.log("subscribe topics error :"+err.toString());
+            }
+          });
+          
+          g_MQTTClient.subscribe("tcp_result", (err) => {
+            if(!err){
+              console.log("subscribe success. topic:tcp_result");
+            } else {
+              console.log("subscribe topics error :"+err.toString());
+            }
+          });
       });
       g_MQTTClient.on('message', (topic, payload, packet) => {
           console.log("receive message topic :"+topic+" content :"+payload.toString());
           if(topic===mqttConf.uploadMeasurementMetrics){
             dispatch(addDataItem(JSON.parse(payload.toString())));
             updateMapSource(JSON.parse(payload.toString()));
-          } else if (topic==='ping_result') {
-            console.log("ping_result:",payload.toString());
+          } else if (topic==='ping_result'||topic==='attach_result'||topic==='tcp_result'){
+            console.log(topic,payload.toString());
             dispatch(setPingRec(JSON.parse(payload.toString())));
           } else {
             dispatch(setCommandResult(JSON.parse(payload.toString())));

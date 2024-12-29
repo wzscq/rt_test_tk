@@ -14,6 +14,7 @@ type EventHandler interface {
 
 type ReportHandler interface {
 	HandleReportResult(result string)
+	HandleResult(result string)
 }
 
 type MQTTClient struct {
@@ -27,6 +28,12 @@ type MQTTClient struct {
 	DecodeResutlTopic string
 	ReportHandler ReportHandler
 }
+
+const (
+	PINT_RESULT = "ping_result"
+	ATTACH_RESULT = "attach_result"
+	TCP_RESULT = "tcp_result"
+)
 
 func (mqc *MQTTClient) getClient()(mqtt.Client){
 	timeStamp:=time.Now().Unix()
@@ -61,6 +68,10 @@ func (mqc *MQTTClient) connectHandler(client mqtt.Client){
 		topic:=mqc.DecodeResutlTopic
 		log.Println("MQTTClient Subscribe topic:"+topic)
 		client.Subscribe(topic,0,mqc.OnDecodeResutl)
+
+		client.Subscribe(PINT_RESULT,0,mqc.OnResutl)
+		client.Subscribe(ATTACH_RESULT,0,mqc.OnResutl)
+		client.Subscribe(TCP_RESULT,0,mqc.OnResutl)
 	}
 }
 
@@ -89,6 +100,14 @@ func (mqc *MQTTClient) OnReportResutl(Client mqtt.Client, msg mqtt.Message){
 
 	if mqc.Handler != nil {
 		mqc.ReportHandler.HandleReportResult(string(msg.Payload()))
+	}
+}
+
+func (mqc *MQTTClient) OnResutl(Client mqtt.Client, msg mqtt.Message){
+	log.Println("MQTTClient OnResutl ",msg.Topic(),string(msg.Payload()))
+
+	if mqc.Handler != nil {
+		mqc.ReportHandler.HandleResult(string(msg.Payload()))
 	}
 }
 

@@ -16,11 +16,14 @@ type TestFile struct {
 	OutPath     string
 	DeviceID    string
 	TimeStamp   string
+	Results     []string
 	ContentFile *os.File
+	ResultFile  *os.File
 	StartTime   int64
 	LineCount   int64
 	//下面两个字段用于控制文件超时关闭
 	lastLineCount int64
+	sameLineCount int  //相同行连续出现的次数
 }
 
 type Point struct {
@@ -30,19 +33,26 @@ type Point struct {
 	Value float64 `json:"value"`
 }
 
-func (tf *TestFile) Close(result string) {
-	indexFileName := tf.OutPath + "/" + tf.DeviceID + "_" + tf.TimeStamp + ".result"
+func (tf *TestFile) Close() {
+	/*indexFileName := tf.OutPath + "/" + tf.DeviceID + "_" + tf.TimeStamp + ".result"
 	idxFile, err := os.OpenFile(indexFileName, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		log.Printf("Open file failed [Err:%s]\n", err.Error())
 	} else {
+		result := strings.Join(tf.Results, "\n")
 		idxFile.WriteString(result)
 		idxFile.Close()
-	}
+	}*/
+	tf.ResultFile.Close()
 	tf.ContentFile.Close()
 
 	tf.ZipResult()
 	tf.DeleteFile()
+}
+
+func (tf *TestFile) AddResult(result string) {
+	//tf.Results = append(tf.Results, result)
+	tf.ResultFile.WriteString(result + "\n")
 }
 
 func (tf *TestFile) DeleteFile() {
@@ -112,6 +122,7 @@ func (tf *TestFile) ZipResult() {
 
 func (tf *TestFile) CloseReadOnly() {
 	tf.ContentFile.Close()
+	tf.ResultFile.Close()
 }
 
 func (tf *TestFile) WriteLine(lineContent string) {
@@ -293,10 +304,18 @@ func GetTestFile(outPath string, deviceID string, timeStamp string) *TestFile {
 		return nil
 	}
 
+	resultFileName := outPath + "/" + deviceID + "_" + timeStamp + ".result"
+	resultFile,err := os.OpenFile(resultFileName, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		log.Printf("Open file failed [Err:%s]\n", err.Error())
+		return nil
+	}
+
 	return &TestFile{
 		DeviceID:    deviceID,
 		TimeStamp:   timeStamp,
 		ContentFile: contentFile,
+		ResultFile:  resultFile,
 		OutPath:     outPath,
 		StartTime:   time.Now().Unix(),
 	}

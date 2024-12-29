@@ -2,10 +2,9 @@ import { useEffect,useCallback } from 'react';
 import {useSelector,useDispatch} from 'react-redux';
 
 import {setParam} from '../redux/frameSlice';
-import {setImsi,setDial} from '../redux/dataSlice';
+import {setImsi,setDial,setAttachStatus,setRATStatus} from '../redux/dataSlice';
 import {setLocale} from '../redux/i18nSlice';
 import {setServerConf} from '../redux/mqttSlice';
-
 
 import {
     FRAME_MESSAGE_TYPE,
@@ -51,7 +50,15 @@ export default function useFrame(){
                 dispatch(setImsi(data));
             } else if (dataType===DATA_TYPE.DIAL){
                 dispatch(setDial(data));
-            } else {
+            } else if (dataType===DATA_TYPE.ATTACH){
+                dispatch(setAttachStatus(data));
+            } else if (dataType===DATA_TYPE.ATTACH_QUERY){
+                dispatch(setAttachStatus(data));
+            } else if (dataType===DATA_TYPE.DETACH){
+                dispatch(setAttachStatus(data));
+            } else if (dataType===DATA_TYPE.RAT){
+                dispatch(setRATStatus(data));
+            }else {
                 console.log("update data with wrong data type:",dataType);
             }
         } else if (type===FRAME_MESSAGE_TYPE.RELOAD_DATA){

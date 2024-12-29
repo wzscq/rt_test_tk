@@ -36,6 +36,7 @@ const (
 	ResultTestCaseIsRunning = 10200019
 	ResultGetRunningDecodingError = 10200020
 	ResultHasRunningDecoding = 10200021
+	ResultNoLastTestCaseError = 10200022
 )
 
 var errMsg = map[int]CommonRsp{
@@ -147,6 +148,11 @@ var errMsg = map[int]CommonRsp{
 	ResultHasRunningDecoding:CommonRsp{
 		ErrorCode:ResultHasRunningDecoding,
 		Message:"当前有正在解码的任务，请稍后再试",
+		Error:true,
+	},
+	ResultNoLastTestCaseError:CommonRsp{
+		ErrorCode:ResultNoLastTestCaseError,
+		Message:"未获取下发的测试用例，请确认是否已下发测试用例",
 		Error:true,
 	},
 }

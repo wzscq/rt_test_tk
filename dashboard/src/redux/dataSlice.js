@@ -4,6 +4,8 @@ const initialState = {
     data:{},
     imsi:{},
     dial:{},
+    attachStatus:{},
+    rat:{}
 }
 
 export const dataSlice = createSlice({
@@ -18,6 +20,12 @@ export const dataSlice = createSlice({
       },
       setDial: (state, action) => {
         state.dial=action.payload;
+      },
+      setAttachStatus: (state, action) => {
+        state.attachStatus=action.payload;
+      },
+      setRATStatus: (state, action) => {
+        state.rat=action.payload;
       }
     }
 });
@@ -25,7 +33,9 @@ export const dataSlice = createSlice({
 export const { 
   setData,
   setImsi,
-  setDial
+  setDial,
+  setAttachStatus,
+  setRATStatus
 } = dataSlice.actions
 
 export default dataSlice.reducer

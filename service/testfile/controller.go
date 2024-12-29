@@ -140,7 +140,7 @@ func (tfc *TestFileController) download(c *gin.Context) {
 		log.Println("TestFileController download with error")
 		log.Println(err)
 		return
-  }
+  	}
 
 	if rep.SelectedRowKeys == nil || len(*rep.SelectedRowKeys) == 0 {
 		rsp:=common.CreateResponse(common.CreateError(common.ResultWrongRequest,nil),nil)
@@ -161,17 +161,32 @@ func (tfc *TestFileController) download(c *gin.Context) {
 		return
 	}
 
-	
-
 	fileName:=file.DeviceID+"_"+file.TimeStamp+".zip"
 	//替换掉文件固定的前缀
 	log.Println("fileName:",fileName)
-	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment;filename=%s", fileName))
 
 	fileName = tfc.OutPath +"/"+ fileName
 	log.Println("decodedFileName with path:",fileName)
 
 	c.File(fileName)
+}
+
+func (tfc *TestFileController) getGPS(c *gin.Context){
+	logfile := c.Param("logfile")
+	if len(logfile) == 0 {
+		log.Println("getGPS error logfile is empty")
+		params:=map[string]interface{}{
+			"error":"logfile param is empty",
+		}
+		rsp := common.CreateResponse(common.CreateError(common.ResultWrongRequest, params), nil)
+		c.IndentedJSON(http.StatusOK, rsp)
+		return
+	}
+
+	gpsRecList:=GetGPSRecFromDB(logfile,tfc.CRVClient)
+	rsp := common.CreateResponse(nil, gpsRecList)
+	c.IndentedJSON(http.StatusOK, rsp)
 }
 
 //Bind bind the controller function to url
@@ -180,4 +195,5 @@ func (tfc *TestFileController) Bind(router *gin.Engine) {
 	router.POST("/testfile/GetContent", tfc.GetContent)
 	router.POST("/testfile/GetPoints", tfc.GetPoints)
 	router.POST("/testfile/download", tfc.download)
+	router.GET("/getGPS/:logfile", tfc.getGPS)
 }

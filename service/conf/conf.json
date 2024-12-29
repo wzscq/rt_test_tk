@@ -10,12 +10,12 @@
         "token":"rt_test_tk_service"
     },
     "deviceClient":{
-        "serverUrl":"http://192.168.100.107:5000/"
+        "serverUrl":"http://10.130.76.80:5000/"
     },
     "mqtt":{
-        "broker":"182.42.81.6",
-        "port":1783,
-        "wsPort":8901,
+        "broker":"401home.tpddns.cn",
+        "port":1983,
+        "wsPort":9101,
         "user":"mosquitto",
         "password":"123456",
         "uploadMeasurementMetrics":"Report",
@@ -32,7 +32,7 @@
     },
     "testFile":{
         "path":"./localcache",
-        "idleBeforeClose":"10s"
+        "idleBeforeClose":"60s"
     },
     "testLogFile":{
         "path":"./logfile/",

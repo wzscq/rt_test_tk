@@ -100,7 +100,19 @@ func GetLogFileListFromDecode(url string)([]LogFileItem,error){
 func GetCreateTime(fileName string)(string){
 	//文件名称格式为：20240519_073626_0014.qmdl2
 	//转换为：2024-05-19 07:36:26
-	return fileName[0:4]+"-"+fileName[4:6]+"-"+fileName[6:8]+" "+fileName[9:11]+":"+fileName[11:13]+":"+fileName[13:15]
+	strTime:=fileName[0:4]+"-"+fileName[4:6]+"-"+fileName[6:8]+" "+fileName[9:11]+":"+fileName[11:13]+":"+fileName[13:15]
+	//转换为时间变量
+	time,err:=time.Parse("2006-01-02 15:04:05",strTime)
+	if err!=nil {
+		log.Println("GetCreateTime error:",err)
+		return strTime
+	}
+	//utc to local
+	time=time.Local()
+
+	//转换为字符串
+	strTime=time.Format("2006-01-02 15:04:05")
+	return strTime
 }
 
 func UpdateLogFilesToDB(files []LogFileItem,crvClient *crv.CRVClient,token string,expandTimeRange time.Duration)(error){

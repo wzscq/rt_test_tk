@@ -40,7 +40,7 @@ export default function UEContent(){
             <SplitPane split="horizontal" initialSizes={[20,40,40]} collapse={false}>
                 <PropertyGrid obj={throughput??{}} title="速率"/>
                 <PropertyGrid obj={measures??{}} title="测量指标"/>
-                <JSONViewer json={JSON.stringify(pingRec??'',undefined,4)+''} title="Ping记录"/>
+                <JSONViewer json={JSON.stringify(pingRec??'',undefined,4)+''} title="Ping/Attach记录"/>
             </SplitPane>
         </SplitPane>
     );
